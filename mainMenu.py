@@ -6,7 +6,6 @@ SCREEN_HEIGHT = 720
 TITLE_COLOR = (207, 228, 255)
 BUTTON_TEXT_COLOR = (224, 238, 255)
 
-
 backgroundMovement = 0
 
 ### Set up
@@ -50,10 +49,8 @@ def createButton(text, offset):
     interactRect.center = SCREEN_RECT.center
     interactRect.centery += offset
 
-
     uiElements[button] = buttonRect
     uiButtons[button]  = interactRect
-
 
     return button
 
@@ -73,7 +70,6 @@ gameTitleRect.centery -= 220
 startButton   = createButton("Play", 50)
 settingButton = createButton("Setting", 140)
 exitButton    = createButton("Exit", 230)
-
 uiElements[gameTitle]  = gameTitleRect
 
 ### Functions
@@ -102,9 +98,25 @@ def renderUiElements():
     for uiElement, rect in uiElements.items():
         screen.blit(uiElement, rect)
 
+def mouseInput():
+    
+    for buttonRect in uiButtons.values():
+        if not buttonRect.collidepoint(pygame.mouse.get_pos()): 
+            continue
+        
+        if buttonRect == uiButtons[startButton]:
+            # Start button
+            print("Start")
+        elif buttonRect == uiButtons[settingButton]:
+            # Setting Button
+            print("Setting")
+        elif buttonRect == uiButtons[exitButton]:
+            # Exit button
+            global running
+            running = False
 
 ### In Game 
-music.load("assets\musics\Piano Instrumental 1.mp3")
+music.load("assets\musics\Eric Skiff - Underclocked (underunderclocked mix).mp3")
 music.play()
 
 while running:
@@ -114,21 +126,20 @@ while running:
         # user clicked X to close window
         if event.type == pygame.QUIT:
             running = False
-
+        elif event.type == pygame.MOUSEBUTTONUP:
+            mouseInput()
 
     renderUiElements()
 
-    for button in uiButtons.values():
-        pygame.draw.rect(screen, "red", button, 1)
+    # # Debug Buttons Collisions
+    # for button in uiButtons.values():
+    #     pygame.draw.rect(screen, "red", button, 1)
 
     # update the whole screen
     pygame.display.flip()
-
 
     # Limit the frame rate to 60
     delta = clock.tick(60)
 
 # Stop the game
 pygame.quit()
-
-# calculate 2
