@@ -3,43 +3,55 @@ import operator
 import time 
 
 TIME_PER_QUESTION = 10 
+TOTAl_QUESTIONS = 20
 
-def random_question():
+def random_question( is_hard_mode = False):
     operators = {
         "+": operator.add,
         "-": operator.sub,
-        "*": operator.mul
+        "*": operator.mul,
     }
-    first_num = random.randint(1, 20)
-    second_num = random.randint(1, 20)
-    third_num = random.randint(1, 20)
-    fourth_num = random.randint(1, 20)
+    first_num = random.randint(0, 10)
+    second_num = random.randint(0, 10)
+    third_num = random.randint(0, 10)
 
     operation_symbol1 = random.choice(list(operators.keys()))
     operation_symbol2 = random.choice(list(operators.keys()))
-    operation_symbol3 = random.choice(list(operators.keys()))
     operation_func1 = operators.get(operation_symbol1)
     operation_func2 = operators.get(operation_symbol2)
-    operation_func3 = operators.get(operation_symbol3)
 
     result_step1 = operation_func1(first_num, second_num)
-    result_step2 = operation_func2(result_step1, third_num)
-    answer = operation_func3(result_step2, fourth_num)
-    
-    question_str = f"{first_num} {operation_symbol1} {second_num} {operation_symbol2} {third_num} {operation_symbol3} {fourth_num} = ?**"
+
+    if is_hard_mode:
+        fourth_num = random.randint(0, 10)
+        operation_symbol3 = random.choice(list(operators.keys()))
+        operation_func3 = operators.get(operation_symbol3)
+
+        result_step2 = operation_func2(result_step1, third_num)
+        answer = operation_func3(result_step2, fourth_num)
+        question_str = f"{first_num} {operation_symbol1} {second_num} {operation_symbol2} {third_num} {operation_symbol3} {fourth_num} = ?"
+    else:
+        answer = operation_func2(result_step1, third_num)
+        question_str = f"{first_num} {operation_symbol1} {second_num} {operation_symbol2} {third_num} = ?"
     return question_str, answer
 
-def ask_question(question_number):
-    question_str, correct_answer = random_question()
-    print(f"\n--- Question {question_number} of 20 ---") 
+def ask_question(question_number): 
+    is_hard_mode = (question_number % 5 == 0)
+    question_str, correct_answer = random_question(is_hard_mode)
+
+    print(f"\n- ** Question ** {question_number} of {TOTAl_QUESTIONS} ---") 
     print(f"**Time limit: {TIME_PER_QUESTION} seconds!**")
     print(question_str)
 
     wrong_choices = set()
     while len(wrong_choices) < 3:
         deviation = random.randint(-10, 10)
-        if deviation == 0: continue 
+
+        if deviation == 0:
+            continue 
+
         wrong_choice = correct_answer + deviation
+
         if wrong_choice != correct_answer and wrong_choice not in wrong_choices:
             wrong_choices.add(wrong_choice)
             
@@ -54,7 +66,6 @@ def ask_question(question_number):
     print("-------------------------")
 
     start_time = time.time()
-    guess_label = None
 
     while True:
         elapsed_time = time.time() - start_time
@@ -74,40 +85,45 @@ def ask_question(question_number):
              else:
                  print("Please enter A, B, C, or D")
         except:
-             pass
+            print("-- Game over! --")
+            return False
+
 
     end_time = time.time()
     time_taken = end_time - start_time
 
     if time_taken > TIME_PER_QUESTION:
         print(f"\nToo late! You took {time_taken:.2f} seconds. The time limit was {TIME_PER_QUESTION}s.")
+        print("Game over!")
         return False
 
     if guess_answer == correct_answer:
         print(f"Time taken: {time_taken:.2f} seconds.")
-    
-    return guess_answer == correct_answer
+        return True
+    else:
+        print(f"False! Game over!")
+        return False
     
 def game():
     score = 0
-    total_questions = 20
-    print(f"Welcome! Get ready for {total_questions} math questions!")
+    print(f"\nWelcome! Get ready for {TOTAl_QUESTIONS} math questions!")
 
-    for i in range(1, total_questions + 1):
+    for i in range(1, TOTAl_QUESTIONS + 1):
         if ask_question(i) == True: 
             score += 1
             print("Correct!")
         else:
-            print("False!") 
+            break
+
     print(f"\n======== GAME OVER ========")
-    print(f"You answered {total_questions} questions.")
-    print(f"Your final score is **{score}/{total_questions}**")
+    print(f"Your final score is **{score}/{TOTAl_QUESTIONS}**")
     
-    if score == total_questions:
+    if score == TOTAl_QUESTIONS:
          print("Perfect Score! You are a Math Genius!")
-    elif score >= total_questions * 0.75:
+    elif score >= TOTAl_QUESTIONS * 0.75:
          print("Excellent work!")
     else:
          print("Keep going!!!")
 
-game()
+if __name__ == "__main__":  
+    game()
