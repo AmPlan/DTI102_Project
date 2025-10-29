@@ -10,18 +10,23 @@ def random_question():
         "-": operator.sub,
         "*": operator.mul
     }
-    first_num = random.randint(1, 10)
-    second_num = random.randint(1, 10)
-    third_num = random.randint(1, 10)
+    first_num = random.randint(1, 20)
+    second_num = random.randint(1, 20)
+    third_num = random.randint(1, 20)
+    fourth_num = random.randint(1, 20)
 
     operation_symbol1 = random.choice(list(operators.keys()))
     operation_func1 = operators.get(operation_symbol1)
     operation_symbol2 = random.choice(list(operators.keys()))
     operation_func2 = operators.get(operation_symbol2)
+    operation_symbol3 = random.choice(list(operators.keys()))
+    operation_func3 = operators.get(operation_symbol3)
+
     result_step1 = operation_func1(first_num, second_num)
-    answer = operation_func2(result_step1, third_num)
+    result_step2 = operation_func2(result_step1, third_num)
+    answer = operation_func3(result_step2, fourth_num)
     
-    question_str = f"{first_num} {operation_symbol1} {second_num} {operation_symbol2} {third_num} = ?"
+    question_str = f"{first_num} {operation_symbol1} {second_num} {operation_symbol2} {third_num} {operation_symbol3} {fourth_num} = ?**"
     return question_str, answer
 
 def ask_question(question_number):
@@ -41,9 +46,9 @@ def ask_question(question_number):
     choices = list(wrong_choices)
     choices.append(correct_answer)
     random.shuffle(choices)
+
     choice_labels = ["A", "B", "C", "D"]
     
-    print("-------------------------")
     for label, choice in zip(choice_labels, choices):
         print(f"({label}) {choice}")
     print("-------------------------")
@@ -56,6 +61,7 @@ def ask_question(question_number):
         remaining_time = TIME_PER_QUESTION - elapsed_time
 
         if remaining_time <= 0:
+            print(f"\nToo late! The time limit was {TIME_PER_QUESTION}s.")
             print(f"\nTime's up! The correct answer was {correct_answer}.")
             return False
         try:
