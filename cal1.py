@@ -16,10 +16,10 @@ def random_question():
     fourth_num = random.randint(1, 20)
 
     operation_symbol1 = random.choice(list(operators.keys()))
-    operation_func1 = operators.get(operation_symbol1)
     operation_symbol2 = random.choice(list(operators.keys()))
-    operation_func2 = operators.get(operation_symbol2)
     operation_symbol3 = random.choice(list(operators.keys()))
+    operation_func1 = operators.get(operation_symbol1)
+    operation_func2 = operators.get(operation_symbol2)
     operation_func3 = operators.get(operation_symbol3)
 
     result_step1 = operation_func1(first_num, second_num)
@@ -61,7 +61,7 @@ def ask_question(question_number):
         remaining_time = TIME_PER_QUESTION - elapsed_time
 
         if remaining_time <= 0:
-            print(f"\nToo late! The time limit was {TIME_PER_QUESTION}s.")
+            print(f"\nToo late! You took more than {TIME_PER_QUESTION} seconds.")
             print(f"\nTime's up! The correct answer was {correct_answer}.")
             return False
         try:
