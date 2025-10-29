@@ -1,11 +1,11 @@
 import random
 import operator
-import time 
+import time
 
-TIME_PER_QUESTION = 10 
+TIME_PER_QUESTION = 10
 TOTAl_QUESTIONS = 20
 
-def random_question( is_hard_mode = False):
+def random_question(is_hard_mode = False):
     operators = {
         "+": operator.add,
         "-": operator.sub,
@@ -35,11 +35,11 @@ def random_question( is_hard_mode = False):
         question_str = f"{first_num} {operation_symbol1} {second_num} {operation_symbol2} {third_num} = ?"
     return question_str, answer
 
-def ask_question(question_number): 
+def ask_question(question_number):
     is_hard_mode = (question_number % 5 == 0)
     question_str, correct_answer = random_question(is_hard_mode)
 
-    print(f"\n- ** Question ** {question_number} of {TOTAl_QUESTIONS} ---") 
+    print(f"\n- ** Question ** {question_number} of {TOTAl_QUESTIONS} ---")
     print(f"**Time limit: {TIME_PER_QUESTION} seconds!**")
     print(question_str)
 
@@ -48,19 +48,19 @@ def ask_question(question_number):
         deviation = random.randint(-10, 10)
 
         if deviation == 0:
-            continue 
+            continue
 
         wrong_choice = correct_answer + deviation
 
         if wrong_choice != correct_answer and wrong_choice not in wrong_choices:
             wrong_choices.add(wrong_choice)
-            
+
     choices = list(wrong_choices)
     choices.append(correct_answer)
     random.shuffle(choices)
 
     choice_labels = ["A", "B", "C", "D"]
-    
+
     for label, choice in zip(choice_labels, choices):
         print(f"({label}) {choice}")
     print("-------------------------")
@@ -76,14 +76,14 @@ def ask_question(question_number):
             print(f"\nTime's up! The correct answer was {correct_answer}.")
             return False
         try:
-             guess_label = input(f"Enter your choice (A, B, C, D) ({remaining_time:.1f}s left): ").upper()
-             
-             if guess_label in choice_labels:
-                 guess_index = choice_labels.index(guess_label) 
-                 guess_answer = choices[guess_index] 
-                 break
-             else:
-                 print("Please enter A, B, C, or D")
+            guess_label = input(f"Enter your choice (A, B, C, D) ({remaining_time:.1f}s left): ").upper()
+
+            if guess_label in choice_labels:
+                guess_index = choice_labels.index(guess_label)
+                guess_answer = choices[guess_index]
+                break
+            else:
+                print("Please enter A, B, C, or D")
         except:
             print("-- Game over! --")
             return False
@@ -103,13 +103,13 @@ def ask_question(question_number):
     else:
         print(f"False! Game over!")
         return False
-    
+
 def game():
     score = 0
     print(f"\nWelcome! Get ready for {TOTAl_QUESTIONS} math questions!")
 
     for i in range(1, TOTAl_QUESTIONS + 1):
-        if ask_question(i) == True: 
+        if ask_question(i) == True:
             score += 1
             print("Correct!")
         else:
@@ -117,13 +117,12 @@ def game():
 
     print(f"\n======== GAME OVER ========")
     print(f"Your final score is **{score}/{TOTAl_QUESTIONS}**")
-    
-    if score == TOTAl_QUESTIONS:
-         print("Perfect Score! You are a Math Genius!")
-    elif score >= TOTAl_QUESTIONS * 0.75:
-         print("Excellent work!")
-    else:
-         print("Keep going!!!")
 
-if __name__ == "__main__":  
-    game()
+    if score == TOTAl_QUESTIONS:
+        print("Perfect Score! You are a Math Genius!")
+    elif score >= TOTAl_QUESTIONS * 0.75:
+        print("Excellent work!")
+    else:
+        print("Keep going!!!")
+
+game()
