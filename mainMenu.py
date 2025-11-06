@@ -12,14 +12,14 @@ backgroundMovement = 0
 pygame.init()
 pygame.mixer.init() # Initial the game sounds
 
-screen  = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+screen  = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.FULLSCREEN | pygame.SCALED)
 clock   = pygame.time.Clock()
 running = True
 
 SCREEN_RECT = screen.get_rect()
 
-gameTitleFont = pygame.font.SysFont("Algerian", 75) # Get system font with size of 18
-font = pygame.font.SysFont("Noto Sans SC", 30) # Get system font with size of 18
+gameTitleFont = pygame.font.Font(r"assets\fonts\Jacquard12-Regular.ttf", 100) # Get system font with size of 70
+font = pygame.font.Font(r"assets\fonts\Jersey10-Regular.ttf", 50) # Get system font with size of 30
 
 delta = 0
 
@@ -32,6 +32,7 @@ backgrounds = {}
 
 def createBackground(path):
     background = pygame.image.load(path).convert_alpha()
+    background = pygame.transform.scale(background, (1280, 853))
     rect = background.get_rect()
     rect.center = SCREEN_RECT.center
 
@@ -56,9 +57,13 @@ def createButton(text, offset):
 
     
 # background
-createBackground("assets\images\mainMenu-background-2.png")
-createBackground("assets\images\mainMenu-background-3.png")
-createBackground("assets\images\mainMenu-background-4.png")
+createBackground(r"assets\images\1.png")
+createBackground(r"assets\images\2.png")
+createBackground(r"assets\images\3.png")
+createBackground(r"assets\images\4.png")
+createBackground(r"assets\images\5.png")
+
+
 
 # gameTitle
 gameTitle = gameTitleFont.render("Office Syndrome", True, TITLE_COLOR)
