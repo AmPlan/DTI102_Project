@@ -21,8 +21,8 @@ screen  = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 clock   = pygame.time.Clock()
 running = True
 
-buttonFont = pygame.font.SysFont("Arial", 25)
-questionFont = pygame.font.SysFont("Arial", 50)
+buttonFont = pygame.font.SysFont("Roboto", 25)
+questionFont = pygame.font.SysFont("Roboto", 50)
 
 questionLabel = None
 level = 1
