@@ -60,10 +60,10 @@ def random_question(is_hard_mode = False):
 
         result_step2 = operation_func2(result_step1, third_num)
         answer = operation_func3(result_step2, fourth_num)
-        question_str = f"( ( {first_num} {operation_symbol1} {second_num} ) {operation_symbol2} {third_num} ) {operation_symbol3} {fourth_num} = ?"
+        question_str = f"  {first_num} {operation_symbol1} {second_num}  {operation_symbol2} {third_num}  {operation_symbol3} {fourth_num} = ?"
     else:
         answer = operation_func2(result_step1, third_num)
-        question_str = f"( {first_num} {operation_symbol1} {second_num} ) {operation_symbol2} {third_num} = ?"
+        question_str = f" {first_num} {operation_symbol1} {second_num}  {operation_symbol2} {third_num} = ?"
     return question_str, answer
 
 def generateChoices(choicesAmount, rightAnswer, wrongAnswers): # int, string, [string]
