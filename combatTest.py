@@ -1,5 +1,6 @@
 import pygame
 import random
+import operator
 
 SCREEN_WIDTH  = 1280
 SCREEN_HEIGHT = 720
@@ -23,17 +24,14 @@ running = True
 buttonFont = pygame.font.SysFont("Arial", 25)
 questionFont = pygame.font.SysFont("Arial", 50)
 
-questionLabel = "Test"
+questionLabel = None
+level = 1
 
 # 0 = {answer = false, label = "test", rect = (x, y, sx, sy)}
 choices = {}
 
 def lerp(start, end, amount):
     return start + ((end - start) * amount)
-
-import random
-import operator
-import time
 
 TIME_PER_QUESTION = 10
 TOTAl_QUESTIONS = 20
@@ -96,30 +94,61 @@ def generateChoices(choicesAmount, rightAnswer, wrongAnswers): # int, string, [s
         choices[pos]["rect"] = rect
 
 def createQuiz(question_number, hardMode = False):
+    global questionLabel
+
+    # Clear old question and answers
+    choices.clear()
+
     is_hard_mode = (question_number % 5 == 0)
-    choicesAmount = (question_number // 5) + 1
+    choicesAmount = (question_number // 5) + 4
 
     question, answer = random_question(hardMode)
 
-    generateChoices(choicesAmount, str(answer), ["7", "8", "9"])
+    questionLabel = questionFont.render(question, 0, (0, 0, 0))
+
+    wrong_choices = []
+    while len(wrong_choices) < (choicesAmount-1):
+        deviation = random.randint(-10, 10)
+
+        if deviation == 0:
+            continue
+
+        wrong_choice = answer + deviation
+
+        if wrong_choice != answer and wrong_choice not in wrong_choices:
+            wrong_choices.append(str(wrong_choice))
+
+
+    generateChoices(choicesAmount, str(answer), wrong_choices)
     
     
 
-generateChoices(4, "5", ["7", "8", "9"])
+createQuiz(level)
+
+def mouseInput():
+    for choice in choices.values():
+        rect = choice["rect"]
+        pygame.draw.rect(screen, "red", rect, 1)
+        if rect.collidepoint(pygame.mouse.get_pos()):
+            global level
+            level += 1
+
+            createQuiz(level)
+
+            print(choice["answer"])
+            return
+            
 
 while running:
     #choices.clear()
-    
 
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
     
     screen.fill((255, 255, 255))
 
-    #screen.blit(questionLabel, (500, 0))
+    screen.blit(questionLabel, (500, 0))
 
     for choice in choices.values():
+        # Render
         rect = choice["rect"]
 
         pygame.draw.rect(screen, (0, 0, 0), choice["rect"])
@@ -128,6 +157,13 @@ while running:
         labelRect = label.get_rect()
         labelRect.center = rect.center
         screen.blit(label, labelRect)
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        elif event.type == pygame.MOUSEBUTTONUP:
+            mouseInput()
+
 
     pygame.display.flip()
 
