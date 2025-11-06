@@ -23,9 +23,9 @@ screen  = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 clock   = pygame.time.Clock()
 running = True
  
-buttonFont = pygame.font.SysFont("Arial", 25)
-questionFont = pygame.font.SysFont("Arial", 50)
-infoFont = pygame.font.SysFont("Arial", 20)
+buttonFont = pygame.font.SysFont("Arial Black", 25)
+questionFont = pygame.font.SysFont("Arial Black", 50)
+infoFont = pygame.font.SysFont("Arial Black", 20)
  
 running = True
 level = 1
@@ -69,31 +69,53 @@ def random_question(is_hard_mode = False):
     return question_str, answer
  
 def generateChoices(choicesAmount, rightAnswer, wrongAnswers): # int, string, [string]
+
     # Available positions for button
+
     availPos = list(range(ANSWER_BUTTON_SCALE_X * ANSWER_BUTTON_SCALE_Y))
-   
+
     # set position for choices
+
     for i in range(choicesAmount):
+
         pos = random.choice(availPos)
+
         del availPos[availPos.index(pos)]
+
         choices[pos] = {}
-       
+
         if i == 0:
+
             choices[pos]["label"] = rightAnswer
+
             choices[pos]["answer"] = True
+
         else:
+
             choices[pos]["label"] = wrongAnswers[i - 1]
+
             choices[pos]["answer"] = False
+
+    scale_x = ANSWER_BUTTON_RANGE_X[1] - ANSWER_BUTTON_RANGE_X[0]
+    scale_y = ANSWER_BUTTON_RANGE_Y[1] - ANSWER_BUTTON_RANGE_Y[0]
+
+    grid_width = scale_x / ANSWER_BUTTON_SCALE_X 
+    grid_height = scale_y / ANSWER_BUTTON_SCALE_Y
  
-    #   0   1   2   3   4
-    #   5   6   7   8   9
-    #   10  11  12  13  14
     for pos in choices.keys():
-        x = lerp(ANSWER_BUTTON_RANGE_X[0], ANSWER_BUTTON_RANGE_X[1], (pos % ANSWER_BUTTON_SCALE_X) / ANSWER_BUTTON_SCALE_X)
-        y = lerp(ANSWER_BUTTON_RANGE_Y[0], ANSWER_BUTTON_RANGE_Y[1], (pos // ANSWER_BUTTON_SCALE_X) / ANSWER_BUTTON_SCALE_Y)
+
+        col = pos % ANSWER_BUTTON_SCALE_X
+        row = pos // ANSWER_BUTTON_SCALE_X
+
+        center_x = ANSWER_BUTTON_RANGE_X[0] + col * grid_width + grid_width / 2
+        center_y = ANSWER_BUTTON_RANGE_Y[0] + row * grid_height + grid_height / 2
  
-        rect = pygame.Rect(x, y + BUTTON_SIZE, BUTTON_SIZE, BUTTON_SIZE)
+        x = center_x - BUTTON_SIZE / 2
+        y = center_y - BUTTON_SIZE / 2 
+        rect = pygame.Rect(x, y, BUTTON_SIZE, BUTTON_SIZE) 
+
         choices[pos]["rect"] = rect
+ 
  
 def createQuiz(question_number):
     global questionLabel
@@ -143,55 +165,126 @@ def mouseInput():
            
  
 while running:
- 
-    screen.fill((255, 255, 255))
- 
+
+    mouse_pos = pygame.mouse.get_pos() 
+
+    sky_color = (135, 206, 235)
+
+    screen.fill(sky_color) 
+
+    grass_color = (34, 139, 34) 
+
+    grass_start_y = SCREEN_HEIGHT * 2 // 3
+
+    grass_rect = pygame.Rect(0, grass_start_y, SCREEN_WIDTH, SCREEN_HEIGHT - grass_start_y)
+
+    pygame.draw.rect(screen, grass_color, grass_rect)
+
     for event in pygame.event.get():
+
         if event.type == pygame.QUIT:
+
             running = False
+
         elif not game_over and event.type == pygame.MOUSEBUTTONUP:
+
             mouseInput()
- 
+
     if not game_over:
+
         #time
+
         elapsed = time.time() - time_start
+
         remaining = TIME_PER_QUESTION - elapsed
- 
+
         if remaining <= 0:
+
             game_over = True    
+
             remaining = 0
  
-        screen.blit(questionLabel, (SCREEN_WIDTH/2 - questionLabel.get_width()/2, 80))
- 
-        for choice in choices.values():
-            rect = choice["rect"]
-            pygame.draw.rect(screen, (0, 110, 255), rect)
-            label = buttonFont.render(choice["label"], True, (255, 255, 255))
-            label_rect = label.get_rect(center=rect.center)
-            screen.blit(label, label_rect)
        
+        question_box_color = (255, 255, 240) 
+
+        q_width = questionLabel.get_width() + 40
+
+        q_height = questionLabel.get_height() + 20
+
+        q_x = SCREEN_WIDTH/2 - q_width/2
+
+        q_y = 80 - 10 
+
+        question_rect = pygame.Rect(q_x, q_y, q_width, q_height)
+
+        pygame.draw.rect(screen, question_box_color, question_rect, border_radius=10) 
+        screen.blit(questionLabel, (SCREEN_WIDTH/2 - questionLabel.get_width()/2, 80))
+
+        for choice in choices.values():
+
+            rect = choice["rect"]
+
+            if rect.collidepoint(mouse_pos):
+
+                button_color = (255, 120, 0) 
+
+            else:
+
+                button_color = (255, 223, 0) 
+
+            center_x = rect.x + rect.width // 2
+
+            center_y = rect.y + rect.height // 2
+
+            radius = BUTTON_SIZE // 2
+
+            pygame.draw.circle(screen, button_color, (center_x, center_y), radius)
+
+            label_color = (101, 67, 33) # สีน้ำตาลเข้ม (Dark Brown)
+
+            label = buttonFont.render(choice["label"], True, label_color) 
+
+            label_rect = label.get_rect(center=rect.center)
+
+            screen.blit(label, label_rect)
+
         info_text = infoFont.render(f"Score: {score} | Question: {level}/{TOTAL_QUESTIONS}", True, (200, 0, 0))
+
         timer_text = infoFont.render(f"Time Left: {remaining:.1f}s", True, (200, 0, 0))
+
         screen.blit(info_text, (120, 20))
+
         screen.blit(timer_text, (SCREEN_WIDTH - 250, 20))
+
     else:
+
         gameover_text = questionFont.render("Game Over!", 0, (255, 0, 0))
+
         screen.blit(gameover_text, (SCREEN_WIDTH/2 - gameover_text.get_width()/2, 250))
- 
+
         score_text = questionFont.render(f"Your Score: {score}", 0, (0, 0, 0))
+
         screen.blit(score_text, (SCREEN_WIDTH/2 - score_text.get_width()/2, 350))
- 
+
     if score == TOTAL_QUESTIONS:
+
         msg = "Perfect Score ! You are a Math Genius!"
+
     elif score >= TOTAL_QUESTIONS * 0.75:
+
         msg = "Excellent work!"      
+
     else:
+
         msg = ""
- 
+
     msg_text = infoFont.render(msg, 0, (0, 0, 0))
+
     screen.blit(msg_text, (SCREEN_WIDTH/2 - msg_text.get_width()/2, 40))  
- 
+
     pygame.display.flip()
+
     clock.tick(60)
- 
+
 pygame.quit()
+ 
