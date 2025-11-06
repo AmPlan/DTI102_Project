@@ -60,10 +60,10 @@ def random_question(is_hard_mode = False):
 
         result_step2 = operation_func2(result_step1, third_num)
         answer = operation_func3(result_step2, fourth_num)
-        question_str = f"{first_num} {operation_symbol1} {second_num} {operation_symbol2} {third_num} {operation_symbol3} {fourth_num} = ?"
+        question_str = f"( ( {first_num} {operation_symbol1} {second_num} ) {operation_symbol2} {third_num} ) {operation_symbol3} {fourth_num} = ?"
     else:
         answer = operation_func2(result_step1, third_num)
-        question_str = f"{first_num} {operation_symbol1} {second_num} {operation_symbol2} {third_num} = ?"
+        question_str = f"( {first_num} {operation_symbol1} {second_num} ) {operation_symbol2} {third_num} = ?"
     return question_str, answer
 
 def generateChoices(choicesAmount, rightAnswer, wrongAnswers): # int, string, [string]
@@ -93,7 +93,7 @@ def generateChoices(choicesAmount, rightAnswer, wrongAnswers): # int, string, [s
         rect = pygame.Rect(x, y + BUTTON_SIZE, BUTTON_SIZE, BUTTON_SIZE)
         choices[pos]["rect"] = rect
 
-def createQuiz(question_number, hardMode = False):
+def createQuiz(question_number):
     global questionLabel
 
     # Clear old question and answers
@@ -102,7 +102,7 @@ def createQuiz(question_number, hardMode = False):
     is_hard_mode = (question_number % 5 == 0)
     choicesAmount = (question_number // 5) + 4
 
-    question, answer = random_question(hardMode)
+    question, answer = random_question(is_hard_mode)
 
     questionLabel = questionFont.render(question, 0, (0, 0, 0))
 
@@ -113,10 +113,10 @@ def createQuiz(question_number, hardMode = False):
         if deviation == 0:
             continue
 
-        wrong_choice = answer + deviation
+        wrong_choice = str(answer + deviation)
 
         if wrong_choice != answer and wrong_choice not in wrong_choices:
-            wrong_choices.append(str(wrong_choice))
+            wrong_choices.append(wrong_choice)
 
 
     generateChoices(choicesAmount, str(answer), wrong_choices)
@@ -130,12 +130,16 @@ def mouseInput():
         rect = choice["rect"]
         pygame.draw.rect(screen, "red", rect, 1)
         if rect.collidepoint(pygame.mouse.get_pos()):
-            global level
-            level += 1
+            
+            if choice["answer"]:
+                # คำตอบถูก
+                global level
+                level += 1
 
-            createQuiz(level)
+                createQuiz(level)
+            else:
+                print("Try again")
 
-            print(choice["answer"])
             return
             
 
