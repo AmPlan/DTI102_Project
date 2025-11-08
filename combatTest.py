@@ -137,15 +137,14 @@ def createQuiz(question_number):
 createQuiz(level)
 
 def reset_game():
-    global level, score, game_over, time_start
+    global level, game_over, time_start
     level = 1
-    score = 0
     game_over = False
     time_start = time.time()
     createQuiz(level)
 
 def mouseInput():
-    global level, score, game_over, time_start, restart_button_rect
+    global level, game_over, time_start, restart_button_rect
     if game_over and restart_button_rect is not None:
         if restart_button_rect.collidepoint(pygame.mouse.get_pos()):
             reset_game()
@@ -156,7 +155,7 @@ def mouseInput():
             rect = choice["rect"]
             if rect.collidepoint(pygame.mouse.get_pos()):
                 if choice["answer"]:
-                    score += 1
+                    playerData.addCoins(1)
                     level += 1
                     if level > TOTAL_QUESTIONS:
                         game_over = True
