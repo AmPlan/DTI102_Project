@@ -18,8 +18,8 @@ running = True
 
 SCREEN_RECT = screen.get_rect()
 
-gameTitleFont = pygame.font.Font(r"assets\fonts\Jacquard12-Regular.ttf", 100) # Get system font with size of 70
-font = pygame.font.Font(r"assets\fonts\Jersey10-Regular.ttf", 50) # Get system font with size of 30
+gameTitleFont = pygame.font.Font(r"Asset\fonts\Jacquard12-Regular.ttf", 100) # Get system font with size of 70
+font = pygame.font.Font(r"Asset\fonts\Jersey10-Regular.ttf", 50) # Get system font with size of 30
 
 delta = 0
 
@@ -57,11 +57,11 @@ def createButton(text, offset):
 
     
 # background
-createBackground(r"assets\images\1.png")
-createBackground(r"assets\images\2.png")
-createBackground(r"assets\images\3.png")
-createBackground(r"assets\images\4.png")
-createBackground(r"assets\images\5.png")
+createBackground(r"Asset\images\1.png")
+createBackground(r"Asset\images\2.png")
+createBackground(r"Asset\images\3.png")
+createBackground(r"Asset\images\4.png")
+createBackground(r"Asset\images\5.png")
 
 
 
@@ -121,11 +121,10 @@ def mouseInput():
             running = False
 
 ### In Game 
-music.load("assets\musics\Eric Skiff - Underclocked (underunderclocked mix).mp3")
+music.load(r"Asset\musics\Eric Skiff - Underclocked (underunderclocked mix).mp3")
 music.play()
 
 while running:
-
     # player's action on window
     for event in pygame.event.get():
         # user clicked X to close window
