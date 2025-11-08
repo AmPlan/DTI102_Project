@@ -42,8 +42,8 @@ text = "AUGHHH WTH IS THIS SUBJECT! I CAN'T DO THIS ANYMORE!!!"
 text1 = ""
 
 
-dialogue_box = pygame.Surface((1050, 120))
-dialogue_box.fill((255, 255, 255))
+dialogue_box = pygame.Surface((1050, 120), pygame.SRCALPHA)
+pygame.draw.rect(dialogue_box, (255, 255, 255), dialogue_box.get_rect(), border_radius=20)
 pygame.draw.rect(dialogue_box, (0, 0, 0), dialogue_box.get_rect(), 4, border_radius=20)
 
 start_time = pygame.time.get_ticks()

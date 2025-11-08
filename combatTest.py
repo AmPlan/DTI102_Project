@@ -150,7 +150,6 @@ createQuiz(level)
 def reset_game():
     global level, score, game_over, time_start, GAME_STATE, coin_mini_game_result, shop_coins_to_add
     level = 1
-    score = 0
     game_over = False
     time_start = time.time()
     GAME_STATE = "PLAYING"
