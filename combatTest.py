@@ -2,6 +2,7 @@ import pygame
 import random
 import operator
 import time
+import playerData
  
 SCREEN_WIDTH  = 1280
 SCREEN_HEIGHT = 720
@@ -32,7 +33,6 @@ infoFont = pygame.font.SysFont("Arial Black", 20)
 restartFont = pygame.font.SysFont("Arial Black", 30)
 
 level = 1
-score = 0
 questionLabel = None
 choices = {}
 game_over = False
@@ -197,6 +197,9 @@ while running:
         q_height = questionLabel.get_height() + 20
         q_x = SCREEN_WIDTH/2 - q_width/2
         q_y = 80 - 10 
+
+        playerCoins = playerData.coins
+
         question_rect = pygame.Rect(q_x, q_y, q_width, q_height)
 
         pygame.draw.rect(screen, question_box_color, question_rect, border_radius=10) 
@@ -219,7 +222,8 @@ while running:
             label_rect = label.get_rect(center=rect.center)
             screen.blit(label, label_rect)
 
-        info_text = infoFont.render(f"Score: {score} | Question: {level}/{TOTAL_QUESTIONS}", True, (200, 0, 0))
+        info_text = infoFont.render(f"Coins: {playerCoins} | Question: {level}/{TOTAL_QUESTIONS}", True, (200, 0, 0))
+
         timer_text = infoFont.render(f"Time Left: {remaining:.1f}s", True, (200, 0, 0))
         screen.blit(info_text, (120, 20))
         screen.blit(timer_text, (SCREEN_WIDTH - 250, 20))
@@ -227,15 +231,16 @@ while running:
     else:
         gameover_text = questionFont.render("Game Over!", 0, (255, 0, 0))
         screen.blit(gameover_text, (SCREEN_WIDTH/2 - gameover_text.get_width()/2, 250))
-        score_text = questionFont.render(f"Your Score: {score}", 0, (0, 0, 0))
-        screen.blit(score_text, (SCREEN_WIDTH/2 - score_text.get_width()/2, 350))
 
-        if score == TOTAL_QUESTIONS:
-            msg = "Perfect Score ! You are a Math Genius!"
-        elif score >= TOTAL_QUESTIONS * 0.75:
-            msg = "Excellent work!"      
-        else:
-            msg = ""
+        coins_text = questionFont.render(f"Your Coins: {playerData.coins}", 0, (0, 0, 0))
+
+        screen.blit(coins_text, (SCREEN_WIDTH/2 - coins_text.get_width()/2, 350))
+
+    if playerCoins == TOTAL_QUESTIONS:
+
+        msg = "You are a Math Genius!"
+
+    elif playerCoins >= TOTAL_QUESTIONS * 0.75:
 
         msg_text = infoFont.render(msg, 0, (0, 0, 0))
         screen.blit(msg_text, (SCREEN_WIDTH/2 - msg_text.get_width()/2, 40))  
