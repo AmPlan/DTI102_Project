@@ -34,7 +34,6 @@ restartFont = pygame.font.SysFont("Arial Black", 35)
 complimentFont = pygame.font.SysFont("Arial Black", 40)
 
 level = 1
-score = 0
 questionLabel = None
 choices = {}
 game_over = False
@@ -46,10 +45,7 @@ shop_coins_to_add = 0
 coin_boxes =[]
 coin_mini_game_result = None
 reward_box_index = 0
- 
-def lerp(start, end, amount):
-    return start + ((end - start) * amount)
- 
+  
 def random_question(is_hard_mode = False):
     operators = {
         "+": operator.add,
@@ -145,12 +141,12 @@ def createQuiz(question_number):
  
  
     generateChoices(choicesAmount, str(answer), wrong_choices)
+    
 createQuiz(level)
 
 def reset_game():
-    global level, score, game_over, time_start, GAME_STATE, coin_mini_game_result, shop_coins_to_add
+    global level, game_over, time_start, GAME_STATE, coin_mini_game_result, shop_coins_to_add
     level = 1
-    score = 0
     game_over = False
     time_start = time.time()
     GAME_STATE = "PLAYING"
@@ -190,7 +186,7 @@ def start_coin_minigame():
     coin_boxes.append(pygame.Rect(x3, y, box_width, box_height))
 
 def mouseInput():
-    global level, score, game_over, time_start, restart_button_rect, GAME_STATE, coin_mini_game_result
+    global level, game_over, time_start, restart_button_rect, GAME_STATE, coin_mini_game_result
     mouse_pos = pygame.mouse.get_pos()
     if game_over and restart_button_rect is not None:
         if restart_button_rect.collidepoint(pygame.mouse.get_pos()):
@@ -234,7 +230,6 @@ def mouseInput():
             if rect.collidepoint(mouse_pos):
                 if choice["answer"]:
                     playerData.coins += 1
-                    score += 1 
                     level += 1
                     
                     if level > TOTAL_QUESTIONS:
