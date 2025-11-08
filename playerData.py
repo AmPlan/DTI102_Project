@@ -1,5 +1,12 @@
 # import json
 
+import pygame
+
+SCREEN_WIDTH  = 1280
+SCREEN_HEIGHT = 720
+
+screenMode = pygame.FULLSCREEN | pygame.SCALED
+
 coins = 0
 
 # def saveData():

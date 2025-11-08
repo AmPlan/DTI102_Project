@@ -1,149 +1,181 @@
 import pygame
+import pygame.mixer
 import pygame.mixer_music as music
+import playerData
+import debug
 
-SCREEN_WIDTH  = 1280
-SCREEN_HEIGHT = 720
-TITLE_COLOR = (207, 228, 255)
-BUTTON_TEXT_COLOR = (224, 238, 255)
+def init(screen, clock):
+    pygame.display.set_mode((playerData.SCREEN_WIDTH, playerData.SCREEN_HEIGHT), playerData.screenMode)
 
-backgroundMovement = 0
+    global backgroundMovement, running, backgrounds, nextScene
 
-### Set up
-pygame.init()
-pygame.mixer.init() # Initial the game sounds
+    TITLE_COLOR = (207, 228, 255)
+    BUTTON_TEXT_COLOR = (224, 238, 255)
+    BUTTON_HOVER_TEXT_COLOR = (124, 129, 135)
 
-screen  = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.FULLSCREEN | pygame.SCALED)
-clock   = pygame.time.Clock()
-running = True
-
-SCREEN_RECT = screen.get_rect()
-
-gameTitleFont = pygame.font.Font(r"Asset\fonts\Jacquard12-Regular.ttf", 100) # Get system font with size of 70
-font = pygame.font.Font(r"Asset\fonts\Jersey10-Regular.ttf", 50) # Get system font with size of 30
-
-delta = 0
-
-### Ui elements
-
-# all ui elements as dictionary that needed to be displayed
-uiElements  = {} # {uiElement : rect }
-uiButtons   = {}
-backgrounds = {}
-
-def createBackground(path):
-    background = pygame.image.load(path).convert_alpha()
-    background = pygame.transform.scale(background, (1280, 853))
-    rect = background.get_rect()
-    rect.center = SCREEN_RECT.center
-
-    backgrounds[background] = rect
-
-def createButton(text, offset):
-    button = font.render(text, True, BUTTON_TEXT_COLOR)
-    buttonRect = button.get_rect()
-    buttonRect.center = SCREEN_RECT.center
-    buttonRect.centery += offset
-
-    interactRect = buttonRect.copy()
-    interactRect.width  = 200
-    interactRect.height = 50
-    interactRect.center = SCREEN_RECT.center
-    interactRect.centery += offset
-
-    uiElements[button] = buttonRect
-    uiButtons[button]  = interactRect
-
-    return button
-
-    
-# background
-createBackground(r"Asset\images\1.png")
-createBackground(r"Asset\images\2.png")
-createBackground(r"Asset\images\3.png")
-createBackground(r"Asset\images\4.png")
-createBackground(r"Asset\images\5.png")
+    running = True
+    nextScene = False    
+    backgroundMovement = 0
 
 
+    SCREEN_RECT = screen.get_rect()
+    HOVER_SOUND = pygame.mixer.Sound(r"Asset\sounds\Minimalist1.mp3")
+    CLICK_SOUND = pygame.mixer.Sound(r"Asset\sounds\Minimalist3.mp3")
 
-# gameTitle
-gameTitle = gameTitleFont.render("Office Syndrome", True, TITLE_COLOR)
-gameTitleRect = gameTitle.get_rect()
-gameTitleRect.center = SCREEN_RECT.center
-gameTitleRect.centery -= 220
 
-# startButton
-startButton   = createButton("Play", 50)
-settingButton = createButton("Setting", 140)
-exitButton    = createButton("Exit", 230)
-uiElements[gameTitle]  = gameTitleRect
+    gameTitleFont = pygame.font.Font(r"Asset\fonts\Jacquard12-Regular.ttf", 100) # Get system font with size of 70
+    font = pygame.font.Font(r"Asset\fonts\Jersey10-Regular.ttf", 50) # Get system font with size of 30
 
-### Functions
+    delta = 0
 
-def renderUiElements():
+    ### Ui elements
 
-    # fill the screen with a color to wipe away anything from last frame
-    screen.fill((58, 96, 113))
+    # all ui elements as dictionary that needed to be displayed
+    uiElements  = {} # {uiElement : rect }
+    uiButtons   = {}
+    backgrounds = {}
 
-    
-    scrollSpeed = 0.25
-    global backgroundMovement
-    backgroundMovement += 0.1 * delta
+    def createBackground(path):
+        background = pygame.image.load(path).convert_alpha()
+        background = pygame.transform.scale(background, (1280, 853))
+        rect = background.get_rect()
+        rect.center = SCREEN_RECT.center
 
-    for background, rect in backgrounds.items():
-        rect.x = backgroundMovement * -scrollSpeed
-        if rect.x < - rect.width:
-            rect.x = -(abs(rect.x) % rect.width)
-        copiedRect = rect.copy()
-        copiedRect.x += rect.width
+        backgrounds[background] = rect
 
-        screen.blit(background, rect)
-        screen.blit(background, copiedRect)
-        scrollSpeed += 0.2
+    def createButton(text, offset):
+        button = font.render(text, True, BUTTON_TEXT_COLOR)
+        buttonRect = button.get_rect()
+        buttonRect.center = SCREEN_RECT.center
+        buttonRect.centery += offset
 
-    for uiElement, rect in uiElements.items():
-        screen.blit(uiElement, rect)
+        buttonHover = font.render(text, True, BUTTON_HOVER_TEXT_COLOR)
 
-def mouseInput():
-    
-    for buttonRect in uiButtons.values():
-        if not buttonRect.collidepoint(pygame.mouse.get_pos()): 
-            continue
+        interactRect = buttonRect.copy()
+        interactRect.width  = 200
+        interactRect.height = 50
+        interactRect.center = SCREEN_RECT.center
+        interactRect.centery += offset
+
+        uiButtons[text] = {
+            "rect" : buttonRect,
+            "interactRect" : interactRect,
+            "normal" : button,
+            "hover" : buttonHover,
+            "isHover" : False
+            }
+
+        return button
+
+    # background
+    createBackground(r"Asset\images\1.png")
+    createBackground(r"Asset\images\2.png")
+    createBackground(r"Asset\images\3.png")
+    createBackground(r"Asset\images\4.png")
+    createBackground(r"Asset\images\5.png")
+
+    # gameTitle
+    gameTitle = gameTitleFont.render("Office Syndrome", True, TITLE_COLOR)
+    gameTitleRect = gameTitle.get_rect()
+    gameTitleRect.center = SCREEN_RECT.center
+    gameTitleRect.centery -= 220
+
+    createButton("Play", 50)
+    createButton("Setting", 140)
+    createButton("Exit", 230)
+    uiElements[gameTitle]  = gameTitleRect
+
+    ### Functions
+
+    def renderUiElements():
+
+        # fill the screen with a color to wipe away anything from last frame
+        screen.fill((58, 96, 113))
+
+        scrollSpeed = 0.25
+        global backgroundMovement
+        backgroundMovement += 0.1 * delta
+
+        for background, rect in backgrounds.items():
+            rect.x = backgroundMovement * -scrollSpeed
+            if rect.x < - rect.width:
+                rect.x = -(abs(rect.x) % rect.width)
+            copiedRect = rect.copy()
+            copiedRect.x += rect.width
+
+            screen.blit(background, rect)
+            screen.blit(background, copiedRect)
+            scrollSpeed += 0.2
+
+        for uiElement, rect in uiElements.items():
+            screen.blit(uiElement, rect)
+
+        for button in uiButtons.values():
+            rect = button["rect"]
+            buttonRect = button["interactRect"]
+            if buttonRect.collidepoint(pygame.mouse.get_pos()):
+                # If player hover for first time play the sound
+                if (not button["isHover"]):
+                    HOVER_SOUND.play()
+                    button["isHover"] = True
+
+                screen.blit(button["hover"], rect)
+            else:
+                screen.blit(button["normal"], rect)
+
+                # Player leave the button prepare to play sound next time
+                button["isHover"] = False
+
+    def mouseInput():
+
+        for buttonName, button in uiButtons.items():
+            buttonRect = button["interactRect"]
+            if not buttonRect.collidepoint(pygame.mouse.get_pos()): 
+                continue
+
+            CLICK_SOUND.play()
+
+            match buttonName:
+                case "Play":
+                    global nextScene
+                    nextScene = True
+                case "Setting":
+                    print("Setting")
+                case "Exit":
+                    global running
+                    running = False
+
+
+    ### In Game 
+    music.load(r"Asset\musics\Eric Skiff - Underclocked (underunderclocked mix).mp3")
+    music.play()
+
+    while running:
         
-        if buttonRect == uiButtons[startButton]:
-            # Start button
-            print("Start")
-        elif buttonRect == uiButtons[settingButton]:
-            # Setting Button
-            print("Setting")
-        elif buttonRect == uiButtons[exitButton]:
-            # Exit button
-            global running
-            running = False
+        # player's action on window
+        for event in pygame.event.get():
+            # user clicked X to close window
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.MOUSEBUTTONUP:
+                mouseInput()
 
-### In Game 
-music.load(r"Asset\musics\Eric Skiff - Underclocked (underunderclocked mix).mp3")
-music.play()
+        renderUiElements()
 
-while running:
-    # player's action on window
-    for event in pygame.event.get():
-        # user clicked X to close window
-        if event.type == pygame.QUIT:
-            running = False
-        elif event.type == pygame.MOUSEBUTTONUP:
-            mouseInput()
+        # # Debug Buttons Collisions
+        # for button in uiButtons.values():
+        #     pygame.draw.rect(screen, "red", button, 1)
 
-    renderUiElements()
+        # update the whole screen
+        pygame.display.flip()
 
-    # # Debug Buttons Collisions
-    # for button in uiButtons.values():
-    #     pygame.draw.rect(screen, "red", button, 1)
+        if nextScene:
+            return "characterSelector"
 
-    # update the whole screen
-    pygame.display.flip()
+        # Limit the frame rate to 60
+        delta = clock.tick(60)
 
-    # Limit the frame rate to 60
-    delta = clock.tick(60)
+    # Stop the game
+    pygame.quit()
 
-# Stop the game
-pygame.quit()
+debug.setup(__name__, init)
