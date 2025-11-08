@@ -9,12 +9,15 @@ SCREEN_HEIGHT = 720
 TIME_PER_QUESTION = 10
 TOTAL_QUESTIONS = 20
 BUTTON_SIZE = 80
- 
+
+RESTART_BUTTON_WIDTH = 250
+RESTART_BUTTON_HEIGHT = 60
+
 ANSWER_BUTTON_RANGE_X = (SCREEN_WIDTH/7, SCREEN_WIDTH - SCREEN_WIDTH/7)
 ANSWER_BUTTON_RANGE_Y = (SCREEN_HEIGHT/3.5, SCREEN_HEIGHT - BUTTON_SIZE * 2)
  
 ANSWER_BUTTON_SCALE_X = 10
-ANSWER_BUTTON_SCALE_Y = 5
+ANSWER_BUTTON_SCALE_Y = 8
  
  
 # Set up
@@ -27,13 +30,14 @@ running = True
 buttonFont = pygame.font.SysFont("Arial Black", 25)
 questionFont = pygame.font.SysFont("Arial Black", 50)
 infoFont = pygame.font.SysFont("Arial Black", 20)
- 
-running = True
+restartFont = pygame.font.SysFont("Arial Black", 30)
+
 level = 1
 questionLabel = None
 choices = {}
 game_over = False
 time_start = time.time()
+restart_button_rect = None
  
 def lerp(start, end, amount):
     return start + ((end - start) * amount)
@@ -68,32 +72,22 @@ def random_question(is_hard_mode = False):
         question_str = f" {first_num} {operation_symbol1} {second_num}  {operation_symbol2} {third_num} = ?"
     return question_str, answer
  
-def generateChoices(choicesAmount, rightAnswer, wrongAnswers): # int, string, [string]
-
-    # Available positions for button
-
+def generateChoices(choicesAmount, rightAnswer, wrongAnswers):
+    global choices
+    choices.clear() 
     availPos = list(range(ANSWER_BUTTON_SCALE_X * ANSWER_BUTTON_SCALE_Y))
 
-    # set position for choices
-
     for i in range(choicesAmount):
-
         pos = random.choice(availPos)
-
         del availPos[availPos.index(pos)]
-
         choices[pos] = {}
 
         if i == 0:
-
             choices[pos]["label"] = rightAnswer
-
             choices[pos]["answer"] = True
 
         else:
-
             choices[pos]["label"] = wrongAnswers[i - 1]
-
             choices[pos]["answer"] = False
 
     scale_x = ANSWER_BUTTON_RANGE_X[1] - ANSWER_BUTTON_RANGE_X[0]
@@ -103,7 +97,6 @@ def generateChoices(choicesAmount, rightAnswer, wrongAnswers): # int, string, [s
     grid_height = scale_y / ANSWER_BUTTON_SCALE_Y
  
     for pos in choices.keys():
-
         col = pos % ANSWER_BUTTON_SCALE_X
         row = pos // ANSWER_BUTTON_SCALE_X
 
@@ -113,21 +106,17 @@ def generateChoices(choicesAmount, rightAnswer, wrongAnswers): # int, string, [s
         x = center_x - BUTTON_SIZE / 2
         y = center_y - BUTTON_SIZE / 2 
         rect = pygame.Rect(x, y, BUTTON_SIZE, BUTTON_SIZE) 
-
         choices[pos]["rect"] = rect
  
  
 def createQuiz(question_number):
     global questionLabel
- 
-    # Clear old question and answers
     choices.clear()
  
-    is_hard_mode = (question_number % 5 == 0)
-    choicesAmount = (question_number // 5) + 4
+    is_hard_mode = (question_number % 5 == 0 and question_number > 0)
+    choicesAmount = min((question_number // 5) + 4, 10)
  
     question, answer = random_question(is_hard_mode)
- 
     questionLabel = questionFont.render(question, 0, (0, 0, 0))
  
     wrong_choices = []
@@ -146,73 +135,67 @@ def createQuiz(question_number):
     generateChoices(choicesAmount, str(answer), wrong_choices)
  
 createQuiz(level)
- 
+
+def reset_game():
+    global level, score, game_over, time_start
+    level = 1
+    score = 0
+    game_over = False
+    time_start = time.time()
+    createQuiz(level)
+
 def mouseInput():
-    global level, game_over
-    for choice in choices.values():
-        rect = choice["rect"]
-        if rect.collidepoint(pygame.mouse.get_pos()):
-            if choice["answer"]:
-                playerData.addCoins(1)  
-                level += 1
-                if level > TOTAL_QUESTIONS:
-                    game_over = True
-                else:
-                    createQuiz(level)
-            else:
-                game_over = True
+    global level, score, game_over, time_start, restart_button_rect
+    if game_over and restart_button_rect is not None:
+        if restart_button_rect.collidepoint(pygame.mouse.get_pos()):
+            reset_game()
+            restart_button_rect = None
             return
+    if not game_over:
+        for choice in choices.values():
+            rect = choice["rect"]
+            if rect.collidepoint(pygame.mouse.get_pos()):
+                if choice["answer"]:
+                    score += 1
+                    level += 1
+                    if level > TOTAL_QUESTIONS:
+                        game_over = True
+                    else: 
+                            createQuiz(level)
+                            time_start = time.time()
+                else:
+                    game_over = True
+                return
            
  
 while running:
-
     mouse_pos = pygame.mouse.get_pos() 
-
     sky_color = (135, 206, 235)
-
     screen.fill(sky_color) 
-
     grass_color = (34, 139, 34) 
-
     grass_start_y = SCREEN_HEIGHT * 2 // 3
-
     grass_rect = pygame.Rect(0, grass_start_y, SCREEN_WIDTH, SCREEN_HEIGHT - grass_start_y)
-
     pygame.draw.rect(screen, grass_color, grass_rect)
 
     for event in pygame.event.get():
-
         if event.type == pygame.QUIT:
-
             running = False
-
-        elif not game_over and event.type == pygame.MOUSEBUTTONUP:
-
+        elif event.type == pygame.MOUSEBUTTONUP:
             mouseInput()
 
     if not game_over:
-
-        #time
-
         elapsed = time.time() - time_start
-
         remaining = TIME_PER_QUESTION - elapsed
 
         if remaining <= 0:
-
             game_over = True    
-
             remaining = 0
  
        
         question_box_color = (255, 255, 240) 
-
         q_width = questionLabel.get_width() + 40
-
         q_height = questionLabel.get_height() + 20
-
         q_x = SCREEN_WIDTH/2 - q_width/2
-
         q_y = 80 - 10 
 
         playerCoins = playerData.coins
@@ -223,45 +206,30 @@ while running:
         screen.blit(questionLabel, (SCREEN_WIDTH/2 - questionLabel.get_width()/2, 80))
 
         for choice in choices.values():
-
             rect = choice["rect"]
-
             if rect.collidepoint(mouse_pos):
-
                 button_color = (255, 120, 0) 
-
             else:
-
                 button_color = (255, 223, 0) 
 
             center_x = rect.x + rect.width // 2
-
             center_y = rect.y + rect.height // 2
-
             radius = BUTTON_SIZE // 2
 
             pygame.draw.circle(screen, button_color, (center_x, center_y), radius)
-
-            label_color = (101, 67, 33) # สีน้ำตาลเข้ม (Dark Brown)
-
+            label_color = (101, 67, 33) 
             label = buttonFont.render(choice["label"], True, label_color) 
-
             label_rect = label.get_rect(center=rect.center)
-
             screen.blit(label, label_rect)
 
         info_text = infoFont.render(f"Coins: {playerCoins} | Question: {level}/{TOTAL_QUESTIONS}", True, (200, 0, 0))
 
         timer_text = infoFont.render(f"Time Left: {remaining:.1f}s", True, (200, 0, 0))
-
         screen.blit(info_text, (120, 20))
-
         screen.blit(timer_text, (SCREEN_WIDTH - 250, 20))
 
     else:
-
         gameover_text = questionFont.render("Game Over!", 0, (255, 0, 0))
-
         screen.blit(gameover_text, (SCREEN_WIDTH/2 - gameover_text.get_width()/2, 250))
 
         coins_text = questionFont.render(f"Your Coins: {playerData.coins}", 0, (0, 0, 0))
@@ -274,18 +242,26 @@ while running:
 
     elif playerCoins >= TOTAL_QUESTIONS * 0.75:
 
-        msg = "Excellent work!"      
+        msg_text = infoFont.render(msg, 0, (0, 0, 0))
+        screen.blit(msg_text, (SCREEN_WIDTH/2 - msg_text.get_width()/2, 40))  
 
-    else:
+        btn_x = SCREEN_WIDTH/2 - RESTART_BUTTON_WIDTH/2
+        btn_y = 450
 
-        msg = ""
+        restart_button_rect = pygame.Rect(btn_x, btn_y, RESTART_BUTTON_WIDTH, RESTART_BUTTON_HEIGHT)
 
-    msg_text = infoFont.render(msg, 0, (0, 0, 0))
+        if restart_button_rect.collidepoint(mouse_pos):
+            btn_color = (255, 110, 0)
+        else:
+            btn_color = (255, 155, 0)
+    
+        pygame.draw.rect(screen, btn_color, restart_button_rect, border_radius=10)
 
-    screen.blit(msg_text, (SCREEN_WIDTH/2 - msg_text.get_width()/2, 40))  
+        restart_label = restartFont.render("TRY AGAIN", True, (255, 255, 255))
+        restart_label_rect = restart_label.get_rect(center=restart_button_rect.center)
+        screen.blit(restart_label, restart_label_rect)
 
     pygame.display.flip()
-
     clock.tick(60)
 
 pygame.quit()
