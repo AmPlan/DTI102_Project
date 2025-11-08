@@ -30,6 +30,8 @@ infoFont = pygame.font.SysFont("Arial Black", 20)
 running = True
 level = 1
 score = 0
+hp = 5
+Max_hp = 5
 questionLabel = None
 choices = {}
 game_over = False
@@ -103,7 +105,6 @@ def generateChoices(choicesAmount, rightAnswer, wrongAnswers): # int, string, [s
     grid_height = scale_y / ANSWER_BUTTON_SCALE_Y
  
     for pos in choices.keys():
-
         col = pos % ANSWER_BUTTON_SCALE_X
         row = pos // ANSWER_BUTTON_SCALE_X
 
@@ -148,7 +149,7 @@ def createQuiz(question_number):
 createQuiz(level)
  
 def mouseInput():
-    global level, score, game_over
+    global level, score, game_over, hp, time_start
     for choice in choices.values():
         rect = choice["rect"]
         if rect.collidepoint(pygame.mouse.get_pos()):
@@ -159,8 +160,15 @@ def mouseInput():
                     game_over = True
                 else:
                     createQuiz(level)
+                    time_start = time.time()
             else:
-                game_over = True
+                hp -= 1
+                print("Wrong ! HP = ", hp)
+                if hp <= 0:
+                    game_over = True
+                else:
+                    createQuiz(level)
+                    time_start = time.time()
             return
            
  
@@ -255,6 +263,26 @@ while running:
         screen.blit(info_text, (120, 20))
 
         screen.blit(timer_text, (SCREEN_WIDTH - 250, 20))
+
+        bar_x = 120
+        bar_y = 50
+        bar_width = 200 
+        bar_height = 20
+
+        pygame.draw.rect(screen, (100, 100, 100), (bar_x, bar_y, bar_width, bar_height))
+        current_bar_width = int((hp / Max_hp) * bar_width)
+
+        if hp == 3:
+            color = (0, 255, 0)
+        elif hp == 2:
+            color = (255, 255, 0)
+        else:
+            color = (255, 0, 0)
+
+        pygame.draw.rect(screen, color, (bar_x, bar_y, current_bar_width, bar_height))  
+
+        hp_text = infoFont.render(f"HP: {hp}/{Max_hp}", True, (0, 0, 0))
+        screen.blit(hp_text, (bar_x + bar_width + 10, bar_y - 2))
 
     else:
 
