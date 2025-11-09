@@ -1,40 +1,40 @@
 import pygame
-
-SCREEN_WIDTH  = 1280
-SCREEN_HEIGHT = 720
+import playerData
 
 # Set up
 pygame.init()
-screen  = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-clock   = pygame.time.Clock()
-running = True
+pygame.mixer.init()
+
+screen = pygame.display.set_mode((playerData.SCREEN_WIDTH, playerData.SCREEN_HEIGHT), playerData.screenMode)
+clock  = pygame.time.Clock()
+
+pygame.display.set_caption("Office Syndrome")
+icon = pygame.image.load("./Asset/game-controller.png")
+pygame.display.set_icon(icon)
 
 
-# Get system font with size of 18
-font = pygame.font.SysFont("Arial", 18) 
+def _changeScene(scene, screen, clock):
+    match scene:
+        case "mainMenu":
+            import mainMenu
+            return mainMenu.init(screen, clock)
+        case "combat":
+            pass
+        case "cutscene":
+            import cutscene
+            return cutscene.init(screen, clock)
+        case "characterSelector":
+            import characterSelector
+            return characterSelector.init(screen, clock)
 
-# Game loop
-while running:
 
-    # player's action on window
-    for event in pygame.event.get():
-        # user clicked X to close window
-        if event.type == pygame.QUIT:
-            running = False
+def changeScene(scene, screen, clock):
+    while True:
+        if scene is None:
+            break
+        print(scene)
+        scene = _changeScene(scene, screen, clock)
+    
 
-    # fill the screen with a color to wipe away anything from last frame
-    screen.fill("white")
-    testText = font.render("Hello World!", True, (0, 0, 0))
-
-    screen.blit(testText, (SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2))
-
-    # update the whole screen
-    pygame.display.flip()
-
-    # Limit the frame rate to 60
-    clock.tick(60)
-
-# Stop the game
-pygame.quit()
-
-# calculate 2
+if __name__ == "__main__":
+    changeScene("cutscene", screen, clock)
