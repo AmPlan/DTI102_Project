@@ -48,4 +48,25 @@ def saveData():
         print(f"Error saving data: {e}")
 
 
-loadData()
+# def saveData():
+#     global coins
+#     playerFile = open(FILE_PATH, "w")
+# 
+#     dataToSave = {
+#     }
+# 
+#     json.dump(dataToSave, playerFile)
+#     playerFile.close()
+#     
+# 
+# def loadData():
+#     try:
+#         playerFile = open(FILE_PATH, "r")
+#         playerDataJSON = playerFile.read()
+#         playerData = json.loads(playerDataJSON)
+# 
+#         
+#         playerFile.close()
+# 
+#     except FileNotFoundError:
+#         pass
