@@ -19,8 +19,8 @@ ANSWER_BUTTON_RANGE_Y = (SCREEN_HEIGHT/2.5, SCREEN_HEIGHT - BUTTON_SIZE * 1.5)
 
 player_data = {
     "temp_power_ups": {}, 
-    "max_player_hp": 3,
-    "player_hp": 3,
+    "max_player_hp": 4,
+    "player_hp":4,
     "enemy_base_hp": 5,
     "enemy_hp": 5,
     "enemy_difficulty": 0,
@@ -70,7 +70,7 @@ reward_box_index = 0
 def respawn_enemy():
     global player_data
     player_data["enemy_difficulty"] += 1
-    new_max_hp = player_data["enemy_base_hp"] + math.ceil(player_data["enemy_difficulty"] / 2)
+    new_max_hp = player_data["enemy_base_hp"] + math.ceil(player_data["enemy_difficulty"] / 3)
     player_data["enemy_hp"] = new_max_hp
     player_data["enemy_max_hp_calc"] = new_max_hp
     print(f"Enemy Respawned! New HP: {new_max_hp}")
@@ -182,7 +182,7 @@ def createQuiz(question_number):
     global questionLabel, player_data
     choices.clear()
  
-    is_hard_mode = (question_number % 5 == 0 and question_number > 0)
+    is_hard_mode = (question_number % 3 == 0 and question_number > 0)
     choicesAmount = min((question_number // 5) + 4, 10)
  
     question, answer = random_question(is_hard_mode)
@@ -221,7 +221,7 @@ def reset_game():
     shop_coins_to_add = 0
     global player_data
     player_data["temp_power_ups"] = {}
-    player_data["max_player_hp"] = 3
+    player_data["max_player_hp"] = 4
     player_data["player_hp"] = player_data["max_player_hp"]
     player_data["enemy_base_hp"] = 5
     player_data["enemy_hp"] = 5
@@ -317,6 +317,7 @@ def mouseInput():
         if continue_level_rect.collidepoint(mouse_pos):
             GAME_STATE = "PLAYING"
             coin_mini_game_result = None
+            respawn_enemy()
             createQuiz(level) 
             time_start = time.time()
             return
