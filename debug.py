@@ -8,9 +8,11 @@ def setup(name, init):
         print(name)
         pygame.init()
         pygame.mixer.init() # Initial the game sounds
-    
+        pygame.font.init()
+        
         screen = pygame.display.set_mode((playerData.SCREEN_WIDTH, playerData.SCREEN_HEIGHT))
         clock  = pygame.time.Clock()
+        
     
         init(screen, clock)
     

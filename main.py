@@ -4,6 +4,7 @@ import playerData
 # Set up
 pygame.init()
 pygame.mixer.init()
+pygame.font.init()
 
 screen = pygame.display.set_mode((playerData.SCREEN_WIDTH, playerData.SCREEN_HEIGHT), playerData.screenMode)
 clock  = pygame.time.Clock()
@@ -19,7 +20,8 @@ def _changeScene(scene, screen, clock):
             import mainMenu
             return mainMenu.init(screen, clock)
         case "combat":
-            pass
+            import combatTest
+            return combatTest.init(screen, clock)
         case "cutscene":
             import cutscene
             return cutscene.init(screen, clock)

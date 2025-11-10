@@ -3,7 +3,9 @@ import debug
 from playerData import SCREEN_HEIGHT, SCREEN_WIDTH
 
 def init(screen, clock):
-    global selectingCharacter
+    global selectingCharacter, changeScene
+
+    changeScene = False
     running = True
 
     HOVER_SOUND = pygame.mixer.Sound(r"Asset\sounds\Minimalist1.mp3")
@@ -55,11 +57,12 @@ def init(screen, clock):
             characterRect = characters[selectingCharacter]["rect"]
             pygame.draw.rect(screen, (255, 0, 0), characterRect, 3)
         except TypeError:
-            # show nothing if found no character from selectingCharacter
+            # show nothing if find no character from selectingCharacter
             pass
 
 
     def mouseInput():
+        global changeScene
         mousePos = pygame.mouse.get_pos()
 
         # Select Character
@@ -73,7 +76,8 @@ def init(screen, clock):
                 selectingCharacter = i
 
         if (selectingCharacter is not None) and (selectButtonRect.collidepoint(mousePos)):
-            print(f"Your Character is {selectingCharacter}")
+            changeScene = True
+
     
 
     while running:
@@ -92,6 +96,9 @@ def init(screen, clock):
         # show if player already selected character
         if selectingCharacter is not None:
             screen.blit(selectButtonLabel, selectButtonRect)
+
+        if changeScene:
+            return "combat"
 
         pygame.display.flip()
         clock.tick(60)
