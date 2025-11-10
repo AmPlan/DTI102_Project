@@ -45,12 +45,12 @@ def init(screen, clock):
     # Set up
     running = True
     
-    buttonFont = pygame.font.SysFont("Arial Black", 28)
-    questionFont = pygame.font.SysFont("Arial Black", 60)
-    infoFont = pygame.font.SysFont("Arial Black", 20)
-    restartFont = pygame.font.SysFont("Arial Black", 35)
-    complimentFont = pygame.font.SysFont("Arial Black", 40)
-    hpFont = pygame.font.SysFont("Arial Black", 25)
+    infoFont       = pygame.font.Font(r"Asset\fonts\Jersey10-Regular.ttf", 20)
+    hpFont         = pygame.font.Font(r"Asset\fonts\Jersey10-Regular.ttf", 25)
+    buttonFont     = pygame.font.Font(r"Asset\fonts\Jersey10-Regular.ttf", 28)
+    restartFont    = pygame.font.Font(r"Asset\fonts\Jersey10-Regular.ttf", 35)
+    complimentFont = pygame.font.Font(r"Asset\fonts\Jersey10-Regular.ttf", 40)
+    questionFont   = pygame.font.Font(r"Asset\fonts\Jersey10-Regular.ttf", 60)
 
     level = 1
     questionLabel = None
@@ -109,7 +109,7 @@ def init(screen, clock):
         operators = {
             "+": operator.add,
             "-": operator.sub,
-            "*": operator.mul,
+            "×": operator.mul,
         }
         first_num = random.randint(0, 10)
         second_num = random.randint(0, 10)
