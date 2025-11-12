@@ -150,7 +150,7 @@ def init(screen, clock):
     complimentFont = pygame.font.Font(r"Asset\fonts\Jersey10-Regular.ttf", 40)
     questionFont   = pygame.font.Font(r"Asset\fonts\Jersey10-Regular.ttf", 60)
 
-    level = 19
+    level = 1
     questionLabel = None
     choices = {}
     time_start = 0
