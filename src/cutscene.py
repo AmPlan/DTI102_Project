@@ -1,8 +1,5 @@
 import pygame
 import playerData
-import debug
-import random
-import math
 import time 
 
 def init(screen, clock):
@@ -100,5 +97,3 @@ def init(screen, clock):
 
     
     #-------------------------------------------------------------------------------    
-
-debug.setup(__name__, init)

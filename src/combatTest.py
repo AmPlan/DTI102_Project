@@ -4,11 +4,56 @@ import operator
 import time
 import playerData
 import math
-import debug
 
 import pygame.mixer_music as music
 
- 
+from constants.ShopPowerUps import SHOP_POWER_UPS
+
+# Player at game over screen
+player = pygame.image.load("./Asset/Player.png")
+player = pygame.transform.scale(player, (550, 550))
+playerX, playerY = (0, 440)
+
+# Player but hurting at game over screen
+Hurt = pygame.image.load("./Asset/HURT.png")
+Hurt = pygame.transform.scale(Hurt, (600, 700))
+HurtX, HurtY = (0, 360)
+
+
+# Player at combat scene
+playerCharacter = pygame.image.load("./Asset/Player.png")
+playerCharacter = pygame.transform.scale(playerCharacter, (225, 225))
+
+# Player Hurt at combat scene
+playerCharacterHurt = pygame.image.load("./Asset/Hurt.png")
+playerCharacterHurt = pygame.transform.scale(playerCharacterHurt, (300, 350))
+
+# name = {NormalImage : ... , HurtImage : ...}
+enemyCharacters = {}
+
+# set player last damage time 
+lastPlayerDamageTime = time.time()
+lastEnemyDamageTime = time.time()
+
+def addEnemy(name, normalPath, normalTransform, hurtPath, hurtTransform, pos, hurtPos):
+    enemy = pygame.image.load(normalPath)
+    enemy = pygame.transform.scale(enemy, normalTransform)
+
+    enemyHurt = pygame.image.load(hurtPath)
+    enemyHurt = pygame.transform.scale(enemyHurt, hurtTransform)
+
+    enemyCharacters[name] = {
+        "NormalImage" : enemy,
+        "HurtImage" : enemyHurt,
+        "Position" : pos,
+        "HurtPosition" : hurtPos
+        }
+        
+addEnemy("enemy1", "Asset\mini_Boss1.png", (300, 300), "./Asset/C1.png", (300, 300), (1000, 330), (1000, 330))
+addEnemy("enemy2", "Asset\mini_Boss2.png", (350, 350), "./Asset/C3.png", (350, 350), (960, 310), (960, 310))
+addEnemy("enemy3", "Asset\mini_Boss3.png", (400, 400), "./Asset/C4.png", (200, 200), (925, 240), (1025, 440))
+
+
 SCREEN_WIDTH  = 1280
 SCREEN_HEIGHT = 720
 TIME_PER_QUESTION = 10
@@ -51,61 +96,6 @@ player_data = {
     "clue_master_in_effect": False 
 }
 
-SHOP_POWER_UPS = [
-    {
-        "name": "Meditate",
-        "description": "+1.5 Sec Time",
-        "cost": 15,
-        "effect_key": "TIME_BOOST",
-        "effect_value": 1.5,
-        "is_active": False,
-        "rect": None,
-        "color": (100, 180, 255),
-    },
-    {
-        "name": "Hire a nerd kid",
-        "description": "Remove 2 Wrong",
-        "cost": 40,
-        "effect_key": "CLUE_MASTER",
-        "effect_value": 1,
-        "is_active": True,
-        "rect": None,
-        "color": (180, 100, 255),
-    },
-    {
-        "name": "Go to gym",
-        "description": "Attack + 1",
-        "cost": 30,
-        "effect_key": "DMG_MULTIPLIER",
-        "effect_value": 1,
-        "is_active": False,
-        "rect": None,
-        "color": (255, 100, 100),
-    },
-    {
-        "name": "Eat Mama",
-        "description": "+1 Extra Life",
-        "cost": 50,
-        "effect_key": "LIFE_SAVER",
-        "effect_value": 1,
-        "is_active": False,
-        "rect": None,
-        "color": (218, 165, 32),
-    },
-    {
-        "name": "Drink redbull",
-        "description": "+1 Max HP",
-        "cost": 10,
-        "effect_key": "MAX_HP_BOOST",
-        "effect_value": 1,
-        "is_active": False,
-        "rect": None,
-        "color": (34, 139, 34),
-    },
-]
-
-
-
 
 ANSWER_BUTTON_SCALE_X = 10
 ANSWER_BUTTON_SCALE_Y = 8
@@ -132,7 +122,6 @@ def playMusic(musicName):
         case "SHOP":
             music.load(r"Asset\musics\Sneaky Snitch.mp3")
     music.play(loops=-1) # เล่นไปเรื่อยๆ ไม่มีวันจบ
-
 
 def init(screen, clock):
 
@@ -165,27 +154,34 @@ def init(screen, clock):
             "×": operator.mul,
         }
 
-    global choices, questionLabel, GAME_STATE, level, restart_button_rect, time_start, coin_boxes, coin_mini_game_result, shop_coins_to_add, reward_box_index
+    global current_enemy, choices, questionLabel, GAME_STATE, level, restart_button_rect, time_start, coin_boxes, coin_mini_game_result, shop_coins_to_add, reward_box_index
 
     running = True
-    
-    healthFont     = pygame.font.Font(r"Asset\fonts\Jersey10-Regular.ttf", 20)
-    infoFont       = pygame.font.Font(r"Asset\fonts\Jersey10-Regular.ttf", 20)
-    buttonFont     = pygame.font.Font(r"Asset\fonts\Jersey10-Regular.ttf", 28)
-    restartFont    = pygame.font.Font(r"Asset\fonts\Jersey10-Regular.ttf", 35)
-    complimentFont = pygame.font.Font(r"Asset\fonts\Jersey10-Regular.ttf", 40)
-    questionFont   = pygame.font.Font(r"Asset\fonts\Jersey10-Regular.ttf", 60)
-
     level = 1
     questionLabel = None
     choices = {}
     time_start = 0
 
+    # switch to show normal player or show hurting player
+    ShowPlayer = False
+    ShowHurt = False
+
+
+    healthFont     = pygame.font.Font(r"Asset\fonts\Jersey10-Regular.ttf", 30)
+    infoFont       = pygame.font.Font(r"Asset\fonts\Jersey10-Regular.ttf", 30)
+    buttonFont     = pygame.font.Font(r"Asset\fonts\Jersey10-Regular.ttf", 28)
+    restartFont    = pygame.font.Font(r"Asset\fonts\Jersey10-Regular.ttf", 35)
+    complimentFont = pygame.font.Font(r"Asset\fonts\Jersey10-Regular.ttf", 40)
+    questionFont   = pygame.font.Font(r"Asset\fonts\Jersey10-Regular.ttf", 60)
+
+
     btn_x = SCREEN_WIDTH/2 - RESTART_BUTTON_WIDTH/2
-    btn_y = 400
+    btn_y = 500
+
+    current_enemy = None
 
     restart_button_rect = pygame.Rect(btn_x, btn_y, RESTART_BUTTON_WIDTH, RESTART_BUTTON_HEIGHT)
-    use_skill_rect = pygame.Rect(SCREEN_WIDTH/2 - 100, 650, 200, 40) 
+    use_skill_rect = pygame.Rect(SCREEN_WIDTH/2 - 150, 650, 300, 40) 
 
     GAME_STATE = "SHOP"
     playMusic("SHOP")
@@ -195,7 +191,10 @@ def init(screen, clock):
     reward_box_index = 0
 
     def respawn_enemy():
-        global player_data
+        
+        global player_data, current_enemy
+
+        current_enemy = random.choice(list(enemyCharacters.keys()))
 
         player_data["enemy_difficulty"] += 1
 
@@ -422,8 +421,6 @@ def init(screen, clock):
 
 
     def draw_hp_bar(screen, x, y, is_player=True):
-        
-    
         bg_color = (50, 50, 50)
 
         if is_player:
@@ -431,12 +428,14 @@ def init(screen, clock):
             current_hp = player_data["player_hp"]
             max_hp     = player_data["max_player_hp"]
         else:
-            hp_color = (139, 0, 0)
+            hp_color = (255, 0, 0)
             current_hp = player_data["enemy_hp"]
             max_hp     = player_data.get("enemy_max_hp", player_data["enemy_base_hp"])
 
+        bg_rect_border = pygame.Rect(x-2.5, y-2.5, HP_BAR_WIDTH+5, HP_BAR_HEIGHT+5)
         bg_rect = pygame.Rect(x, y, HP_BAR_WIDTH, HP_BAR_HEIGHT)
 
+        pygame.draw.rect(screen, (0, 0, 0), bg_rect_border, border_radius=5)
         pygame.draw.rect(screen, bg_color, bg_rect, border_radius=5)
         current_hp = max(0, current_hp) 
 
@@ -455,11 +454,12 @@ def init(screen, clock):
 
     def playerTakeDamage():
         
-        global GAME_STATE
+        global GAME_STATE, lastPlayerDamageTime
 
         player_data["player_hp"] -= player_data["enemy_damage"]
         
         if player_data["player_hp"] > 0:
+            lastPlayerDamageTime = time.time()
             playRandomSound(enemyAttackSounds)
             createQuiz(level)
                
@@ -566,6 +566,8 @@ def init(screen, clock):
                                 respawn_enemy() 
                                 createQuiz(level)
                         else:
+                            global lastEnemyDamageTime
+                            lastEnemyDamageTime = time.time()
                             playRandomSound(playerAttackSounds)
                             createQuiz(level) 
                     else:
@@ -584,16 +586,23 @@ def init(screen, clock):
         mouse_pos = pygame.mouse.get_pos()
 
         if GAME_STATE == "PLAYING" or GAME_STATE == "COIN_MINI_GAME":
-            
             screen.blit(backgroundCombat, backgroundCombatRect)
 
         elif GAME_STATE == "SHOP" or GAME_STATE == "GAME_OVER":
             screen.blit(backgroundShop, backgroundShopRect)
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.MOUSEBUTTONUP:
                 mouseInput()
+
+            ShowHurt = True
+            ShowPlayer = False
+
+        if ShowHurt:
+            ShowHurt = False
+            ShowPlayer = True         
 
         match GAME_STATE:
             case "PLAYING":
@@ -614,12 +623,22 @@ def init(screen, clock):
                 info_text = infoFont.render(f"Coins: {playerCoins} | Level: {level}/{TOTAL_ENEMIES}", True, (255, 0, 0))
                 info_text_x = player_hp_bar_x + (HP_BAR_WIDTH - info_text.get_width()) / 2 
                 screen.blit(info_text, (info_text_x, 50))
+                
+                enemy = enemyCharacters[current_enemy]
 
+                if time.time() - lastEnemyDamageTime < 0.2:
+                    screen.blit(enemy["HurtImage"], enemy["HurtPosition"])
+                else:
+                    screen.blit(enemy["NormalImage"], enemy["Position"])
+
+                if time.time() - lastPlayerDamageTime < 0.2:
+                    screen.blit(playerCharacterHurt, (25, 380))
+                else:
+                    screen.blit(playerCharacter, (25, 430))
 
                 enemy_hp_bar_x = SCREEN_WIDTH - player_hp_bar_x - HP_BAR_WIDTH
                 enemy_hp_bar_y = 650
                 draw_hp_bar(screen, enemy_hp_bar_x, enemy_hp_bar_y, is_player=False)
-
 
                 question_box_color = (255, 255, 240) 
                 q_width = questionLabel.get_width() + 40
@@ -743,8 +762,8 @@ def init(screen, clock):
                 gameover_text = questionFont.render("AJ.Nok gave you F! (again)", 0, (255, 0, 0))
                 screen.blit(gameover_text, (SCREEN_WIDTH/2 - gameover_text.get_width()/2, 180))
 
-                coins_text = questionFont.render(f"Your Coins: {playerData.coins}", 0, WHITE_FONT_COLOR)
-                screen.blit(coins_text, (SCREEN_WIDTH/2 - coins_text.get_width()/2, 280))
+                coins_text = questionFont.render(f"Your Coins: {playerData.coins}", 0, (255, 255, 255))
+                screen.blit(coins_text, (SCREEN_WIDTH/2 - coins_text.get_width()/2, 400))
 
                 msg = getGameOverMessage()
                 
@@ -752,6 +771,12 @@ def init(screen, clock):
                 screen.blit(msg_text, (SCREEN_WIDTH/2 - msg_text.get_width()/2, 40)) 
 
                 createButton(restartFont, "Back to 7-11", WHITE_FONT_COLOR, restart_button_rect, RESTART_BUTTON_COLOR, 10)
+        
+                if ShowPlayer:
+                    screen.blit(player, (playerX, playerY))
+                if ShowHurt:
+                    screen.blit(Hurt, (HurtX, HurtY))
+        
 
         pygame.display.flip()
 
@@ -759,4 +784,3 @@ def init(screen, clock):
     
     pygame.quit()
 
-debug.setup(__name__, init)

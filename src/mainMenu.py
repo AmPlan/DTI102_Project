@@ -2,45 +2,49 @@ import pygame
 import pygame.mixer
 import pygame.mixer_music as music
 import playerData
-import debug
+
+TITLE_COLOR = (207, 228, 255)
+BUTTON_TEXT_COLOR = (224, 238, 255)
+BUTTON_HOVER_TEXT_COLOR = (124, 129, 135)
 
 def init(screen, clock):
+    global backgroundMovement, running, backgrounds, changeToNextScene
+
     pygame.display.set_mode((playerData.SCREEN_WIDTH, playerData.SCREEN_HEIGHT), playerData.screenMode)
-
-    global backgroundMovement, running, backgrounds, nextScene
-
-    TITLE_COLOR = (207, 228, 255)
-    BUTTON_TEXT_COLOR = (224, 238, 255)
-    BUTTON_HOVER_TEXT_COLOR = (124, 129, 135)
-
+    
+    # Variables
+    changeToNextScene = False
     running = True
-    nextScene = False    
+
     backgroundMovement = 0
+    delta = 0
 
-
+    # Sounds
     SCREEN_RECT = screen.get_rect()
     HOVER_SOUND = pygame.mixer.Sound(r"Asset\sounds\Minimalist1.mp3")
     CLICK_SOUND = pygame.mixer.Sound(r"Asset\sounds\Minimalist3.mp3")
 
-
+    # Fonts
     gameTitleFont = pygame.font.Font(r"Asset\fonts\Jacquard12-Regular.ttf", 100) # Get system font with size of 70
-    font = pygame.font.Font(r"Asset\fonts\Jersey10-Regular.ttf", 50) # Get system font with size of 30
-
-    delta = 0
+    font          = pygame.font.Font(r"Asset\fonts\Jersey10-Regular.ttf", 50) # Get system font with size of 30
 
     ### Ui elements
 
     # all ui elements as dictionary that needed to be displayed
     uiElements  = {} # {uiElement : rect }
-    uiButtons   = {}
+    uiButtons   = {} # {string :  {rect, interactRect, normal, hover, isHover}}
     backgrounds = {}
 
     def createBackground(path):
+        # Create background
         background = pygame.image.load(path).convert_alpha()
         background = pygame.transform.scale(background, (1280, 853))
+
+        # Create rect
         rect = background.get_rect()
         rect.center = SCREEN_RECT.center
 
+        # save to backgrounds list
         backgrounds[background] = rect
 
     def createButton(text, offset):
@@ -67,25 +71,29 @@ def init(screen, clock):
 
         return button
 
-    # background
+    # backgrounds
     createBackground(r"Asset\images\1.png")
     createBackground(r"Asset\images\2.png")
     createBackground(r"Asset\images\3.png")
     createBackground(r"Asset\images\4.png")
     createBackground(r"Asset\images\5.png")
 
-    # gameTitle
+    # Game Title
     gameTitle = gameTitleFont.render("Office Syndrome", True, TITLE_COLOR)
+
+    # Game Title Rect
     gameTitleRect = gameTitle.get_rect()
     gameTitleRect.center = SCREEN_RECT.center
     gameTitleRect.centery -= 220
 
-    createButton("Play", 50)
-    createButton("Exit", 140)
+    # Save game title as ui element
     uiElements[gameTitle]  = gameTitleRect
 
-    ### Functions
+    # Game Buttons
+    createButton("Play", 50)
+    createButton("Exit", 140)
 
+    ### Functions
     def renderUiElements():
 
         # fill the screen with a color to wipe away anything from last frame
@@ -136,12 +144,11 @@ def init(screen, clock):
 
             match buttonName:
                 case "Play":
-                    global nextScene
-                    nextScene = True
+                    global changeToNextScene
+                    changeToNextScene = True
                 case "Exit":
                     global running
                     running = False
-
 
     ### In Game 
     music.load(r"Asset\musics\Eric Skiff - Underclocked (underunderclocked mix).mp3")
@@ -159,14 +166,10 @@ def init(screen, clock):
 
         renderUiElements()
 
-        # # Debug Buttons Collisions
-        # for button in uiButtons.values():
-        #     pygame.draw.rect(screen, "red", button, 1)
-
         # update the whole screen
         pygame.display.flip()
 
-        if nextScene:
+        if changeToNextScene:
             return "characterSelector"
 
         # Limit the frame rate to 60
@@ -174,5 +177,3 @@ def init(screen, clock):
 
     # Stop the game
     pygame.quit()
-
-debug.setup(__name__, init)
