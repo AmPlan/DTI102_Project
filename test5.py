@@ -46,7 +46,7 @@ miniBoss3X, miniBoss3Y = 9080, 4000
 
 player_speed = 5
 frame_timer = 0
-frame_delay = 1000
+frame_delay = 10
 toggle = False
 facingLeft = False
 camX = camY = 0
