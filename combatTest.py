@@ -53,7 +53,7 @@ player_data = {
 
 SHOP_POWER_UPS = [
     {
-        "name": "Mediate",
+        "name": "Meditate",
         "description": "+1.5 Sec Time",
         "cost": 15,
         "effect_key": "TIME_BOOST",
@@ -125,7 +125,7 @@ def playMusic(musicName):
             music.load(r"Asset\musics\childhood.mp3")
         case "SHOP":
             music.load(r"Asset\musics\Sneaky Snitch.mp3")
-    music.play()
+    music.play(loops=-1) # เล่นไปเรื่อยๆ ไม่มีวันจบ
 
 
 def init(screen, clock):
@@ -170,6 +170,8 @@ def init(screen, clock):
 
     def respawn_enemy():
         global player_data
+
+        
 
         player_data["enemy_difficulty"] += 1
 
@@ -468,9 +470,10 @@ def init(screen, clock):
                         if box_rect.collidepoint(mouse_pos):
                             if i == reward_box_index:
                                 playerData.addCoins(shop_coins_to_add)
-                                coin_mini_game_result = shop_coins_to_add
+                                coin_mini_game_result = shop_coins_to_add * 2
                             else:
-                                coin_mini_game_result = 0
+                                playerData.addCoins(shop_coins_to_add)
+                                coin_mini_game_result = shop_coins_to_add
                             return
                 else:
                     btn_x = SCREEN_WIDTH/2 - RESTART_BUTTON_WIDTH/2
@@ -532,6 +535,7 @@ def init(screen, clock):
                             elif level == 4 or level == 7 or level == 10 or level == 13 or level == 16 or level == 19: 
                                 start_coin_minigame()
                             else:
+                                playerData.addCoins(math.floor(5 * ((level / 5) + 1)))
                                 respawn_enemy() 
                                 createQuiz(level)
                         else:
@@ -559,7 +563,6 @@ def init(screen, clock):
             screen.blit(backgroundShop, backgroundShopRect)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                playerData.saveData()
                 running = False
             elif event.type == pygame.MOUSEBUTTONUP:
                 mouseInput()
@@ -696,7 +699,7 @@ def init(screen, clock):
 
                     key = power_up["effect_key"]
                     count = player_data["temp_power_ups"].get(key, 0)
-                    count_label = infoFont.render(f"Own: {count}", True, (255, 255, 0))
+                    count_label = infoFont.render(f"+{count}", True, (255, 255, 0))
 
                     screen.blit(count_label, count_label.get_rect(center=(rect.centerx, rect.bottom - 70)))
                     cost_label = restartFont.render(f"{power_up['cost']}", True, (255, 255, 0))
@@ -709,7 +712,6 @@ def init(screen, clock):
                 createButton(restartFont, "Destroy the office!", WHITE_FONT_COLOR, continue_level_rect, CONTINUE_BUTTON_COLOR, 10)
 
             case "GAME_OVER":
-                playerData.saveData()
 
                 gameover_text = questionFont.render("AJ.Nok gave you F! (again)", 0, (255, 0, 0))
                 screen.blit(gameover_text, (SCREEN_WIDTH/2 - gameover_text.get_width()/2, 180))

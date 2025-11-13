@@ -148,7 +148,7 @@ def init(screen, clock):
 
     ### In Game 
     music.load(r"Asset\musics\Eric Skiff - Underclocked (underunderclocked mix).mp3")
-    music.play()
+    music.play(-1)
 
     while running:
         
