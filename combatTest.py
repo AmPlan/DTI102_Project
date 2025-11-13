@@ -105,6 +105,8 @@ SHOP_POWER_UPS = [
 ]
 
 
+
+
 ANSWER_BUTTON_SCALE_X = 10
 ANSWER_BUTTON_SCALE_Y = 8
 
@@ -114,6 +116,10 @@ def createBackground(path):
     rect = background.get_rect()
     rect.center = (SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
     return background, rect
+
+def playRandomSound(sounds):
+    sound = random.choice(sounds)
+    sound.play()
 
 def playMusic(musicName):
     match musicName:
@@ -129,6 +135,26 @@ def playMusic(musicName):
 
 
 def init(screen, clock):
+
+    # Sounds
+    playerAttackSounds = [
+        pygame.mixer.Sound(r"Asset\sounds\DSGNImpt_MELEE-Magic Kick_HY_PC-001.wav"),
+        pygame.mixer.Sound(r"Asset\sounds\DSGNImpt_MELEE-Magic Kick_HY_PC-002.wav"),
+        pygame.mixer.Sound(r"Asset\sounds\DSGNImpt_MELEE-Magic Kick_HY_PC-003.wav")
+    ]
+
+    enemyAttackSounds = [
+        pygame.mixer.Sound(r"Asset\sounds\FGHTImpt_MELEE-Swish Hit_HY_PC-001.wav"),
+        pygame.mixer.Sound(r"Asset\sounds\FGHTImpt_MELEE-Swish Hit_HY_PC-002.wav"),
+        pygame.mixer.Sound(r"Asset\sounds\FGHTImpt_MELEE-Swish Hit_HY_PC-003.wav")
+    ]
+    enemyDefeatSound = pygame.mixer.Sound(r"Asset\sounds\DSGNMisc_HIT-Gore Pierce_HY_PC-006.wav")
+    shopUpgradeSound = pygame.mixer.Sound(r"Asset\sounds\DSGNSynth_BUFF-Mecha Level Up_HY_PC-006.wav")
+    clueMasterSound  = pygame.mixer.Sound(r"Asset\sounds\DSGNTonl_SKILL RELEASE-Whimsy Kick_HY_PC-006.wav")
+    lifeSaverSound   = pygame.mixer.Sound(r"Asset\sounds\MAGAngl_BUFF-Mecha Regen_HY_PC-002.wav")
+    treasureBoxSound = pygame.mixer.Sound(r"Asset\sounds\DSGNTonl_USABLE-Coin Spend_HY_PC-006.wav")
+    gameOverSound    = pygame.mixer.Sound(r"Asset\sounds\shocked-sound-effect.mp3")
+
     # Combat background
     backgroundCombat, backgroundCombatRect = createBackground(r"Asset\images\battleBackground.jpg")
     backgroundShop, backgroundShopRect = createBackground(r"Asset\images\SevenEleven.jpg")
@@ -139,7 +165,7 @@ def init(screen, clock):
             "×": operator.mul,
         }
 
-    global choices, questionLabel, GAME_STATE, level, restart_button_rect, time_start, coin_boxes, coin_mini_game_result
+    global choices, questionLabel, GAME_STATE, level, restart_button_rect, time_start, coin_boxes, coin_mini_game_result, shop_coins_to_add, reward_box_index
 
     running = True
     
@@ -170,8 +196,6 @@ def init(screen, clock):
 
     def respawn_enemy():
         global player_data
-
-        
 
         player_data["enemy_difficulty"] += 1
 
@@ -307,7 +331,7 @@ def init(screen, clock):
         
         time_start = time.time()
     
-        is_hard_mode = (question_level % 3 == 0)
+        is_hard_mode = (question_level % 3 == 0) or (question_level == 20)
         choicesAmount = min((question_level // 5) + 4, 10)
     
         question, answer = random_question(is_hard_mode)
@@ -346,7 +370,6 @@ def init(screen, clock):
 
         global player_data
         #player_data["temp_power_ups"] = {}
-        player_data["max_player_hp"] = 4
         player_data["player_hp"] = player_data["max_player_hp"]
         player_data["enemy_base_hp"] = 5
         player_data["enemy_hp"] = 5
@@ -362,17 +385,16 @@ def init(screen, clock):
         
         coin_mini_game_result = None
 
-        if level == 6:
+        if level <= 6:
            min_c, max_c = 5, 15
-        elif level == 11: 
+        elif level <= 11: 
             min_c, max_c = 10, 25
-        elif level == 16: 
+        elif level <= 16: 
             min_c, max_c = 15, 35
         else:
             min_c, max_c = 20, 45
 
         shop_coins_to_add = random.randint(min_c, max_c)
-        reward_box_index = random.randint(0, 2)
         coin_boxes.clear()
         box_width = 150
         box_height = 150
@@ -431,31 +453,31 @@ def init(screen, clock):
 
         screen.blit(healthLabel, healthLabelRect)
 
-        
-        
-
     def playerTakeDamage():
         
         global GAME_STATE
 
         player_data["player_hp"] -= player_data["enemy_damage"]
-
+        
         if player_data["player_hp"] > 0:
+            playRandomSound(enemyAttackSounds)
             createQuiz(level)
                
             return
             
         # ถ้ามีพลัง Life saver จะรอดตุย HP กลับมาเป็น 1 ใน 3 
         if player_data["temp_power_ups"].get("LIFE_SAVER", 0) > 0:
+            lifeSaverSound.play()
             player_data["temp_power_ups"]["LIFE_SAVER"] -= 1
             player_data["player_hp"] = math.ceil(player_data["max_player_hp"] / 3)
         else:
+            gameOverSound.play()
             GAME_STATE = "GAME_OVER"
             playMusic("GAME_OVER")
              
 
     def mouseInput():
-        global level, GAME_STATE, coin_mini_game_result, player_data
+        global level, GAME_STATE, coin_mini_game_result, player_data, reward_box_index
         mouse_pos = pygame.mouse.get_pos()
         
         match GAME_STATE:
@@ -465,15 +487,17 @@ def init(screen, clock):
                 return
 
             case "COIN_MINI_GAME":
+                
                 if coin_mini_game_result is None:
                     for i, box_rect in enumerate(coin_boxes):
                         if box_rect.collidepoint(mouse_pos):
-                            if i == reward_box_index:
-                                playerData.addCoins(shop_coins_to_add)
-                                coin_mini_game_result = shop_coins_to_add * 2
-                            else:
-                                playerData.addCoins(shop_coins_to_add)
-                                coin_mini_game_result = shop_coins_to_add
+                            playerData.addCoins(shop_coins_to_add)
+                            coin_mini_game_result = shop_coins_to_add
+                            
+                            reward_box_index = i
+
+                            treasureBoxSound.play()
+
                             return
                 else:
                     btn_x = SCREEN_WIDTH/2 - RESTART_BUTTON_WIDTH/2
@@ -489,6 +513,7 @@ def init(screen, clock):
                 for power_up in SHOP_POWER_UPS:
                     if power_up.get("rect") and power_up["rect"].collidepoint(mouse_pos):
                         if buy_power_up(power_up):
+                            shopUpgradeSound.play()
                             return
 
                 btn_x_cont = SCREEN_WIDTH/2 - RESTART_BUTTON_WIDTH/2
@@ -507,6 +532,7 @@ def init(screen, clock):
                 
                 if use_skill_rect.collidepoint(mouse_pos):
                     if use_clue_master():
+                        clueMasterSound.play()
                         createQuiz(level)
                     return
 
@@ -523,11 +549,12 @@ def init(screen, clock):
                         playerData.addCoins(2)
 
                         if player_data["temp_power_ups"].get("DMG_MULTIPLIER"):
-                            damage *= player_data["temp_power_ups"]["DMG_MULTIPLIER"]
+                            damage += player_data["temp_power_ups"]["DMG_MULTIPLIER"]
 
                         player_data["enemy_hp"] -= damage 
 
                         if player_data["enemy_hp"] <= 0: 
+                            enemyDefeatSound.play()
                             level += 1
                             if level > TOTAL_ENEMIES:
                                 GAME_STATE = "GAME_OVER"
@@ -539,6 +566,7 @@ def init(screen, clock):
                                 respawn_enemy() 
                                 createQuiz(level)
                         else:
+                            playRandomSound(playerAttackSounds)
                             createQuiz(level) 
                     else:
                         playerTakeDamage()
@@ -644,14 +672,13 @@ def init(screen, clock):
                 for i, rect in enumerate(coin_boxes):
                     current_box_color = (160, 82, 45) if rect.collidepoint(mouse_pos) and coin_mini_game_result is None else box_color
                     pygame.draw.rect(screen, current_box_color, rect, border_radius=10)
-
                     if coin_mini_game_result is None:
-                        box_label = questionFont.render("?", True, (255, 255, 255))
+                        box_label = questionFont.render("?", True, WHITE_FONT_COLOR)
                     else:
                         if i == reward_box_index:
                             box_label = questionFont.render(f"+{coin_mini_game_result}", True, (255, 255, 0))
                         else:
-                            box_label = questionFont.render("X", True, (255, 0, 0))
+                            box_label = questionFont.render("?", True, WHITE_FONT_COLOR)
 
                     screen.blit(box_label, box_label.get_rect(center=rect.center))
 

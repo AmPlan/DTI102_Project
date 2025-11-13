@@ -1,5 +1,4 @@
 import pygame
-import json 
 
 FILE_PATH = "playerData/player.json" 
 COINS_TEXT = "coins"

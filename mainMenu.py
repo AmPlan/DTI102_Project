@@ -81,8 +81,7 @@ def init(screen, clock):
     gameTitleRect.centery -= 220
 
     createButton("Play", 50)
-    createButton("Setting", 140)
-    createButton("Exit", 230)
+    createButton("Exit", 140)
     uiElements[gameTitle]  = gameTitleRect
 
     ### Functions
@@ -139,8 +138,6 @@ def init(screen, clock):
                 case "Play":
                     global nextScene
                     nextScene = True
-                case "Setting":
-                    print("Setting")
                 case "Exit":
                     global running
                     running = False
