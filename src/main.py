@@ -30,11 +30,11 @@ def _changeScene(scene, screen, clock):
             return characterSelector.init(screen, clock)
 
 
-def changeScene(scene, screen, clock):
+def changeScene(scene, screen, clock): 
     while True:
         if scene is None:
             break
-        print(scene)
+        
         scene = _changeScene(scene, screen, clock)
     
 

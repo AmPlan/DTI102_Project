@@ -1,8 +1,5 @@
 import pygame
 import playerData
-import debug
-import random
-import math
 import time 
 
 def init(screen, clock):
@@ -14,7 +11,7 @@ def init(screen, clock):
     # pygame.mixer.music.play(0)
     pygame.mixer.music.load("./Asset/BreakIn.mp3")
     # pygame.mixer.music.play(0)
-    background = pygame.image.load("./Asset/juri.jpg")
+    background = pygame.image.load("./Asset/pizza.jpg")
     Final_BossImg = pygame.image.load("./Asset/Final Boss1.png")
     Final_BossX = 1190
     Final_BossY = 405
@@ -100,5 +97,3 @@ def init(screen, clock):
 
     
     #-------------------------------------------------------------------------------    
-
-debug.setup(__name__, init)
