@@ -1,5 +1,6 @@
 import pygame
 from playerData import SCREEN_HEIGHT, SCREEN_WIDTH
+import playerData
 
 def init(screen, clock):
     global selectingCharacter, changeScene
@@ -49,7 +50,7 @@ def init(screen, clock):
 
         rect.center = (SCREEN_WIDTH / 2 + xOffset, SCREEN_HEIGHT - 250)
         
-        characters.append({"character" : character, "rect" : rect})
+        characters.append({"character" : character, "rect" : rect, "path" : path})
 
     createCharacter(r"Asset\Player.png", -300)
     createCharacter(r"Asset\Player2.png", 0)
@@ -83,6 +84,7 @@ def init(screen, clock):
                 continue
 
             selectingCharacter = i
+            playerData.playerCharacter = characterData["path"]
 
             CLICK_SOUND.play()    
 
