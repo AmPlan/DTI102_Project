@@ -14,6 +14,7 @@ coins = 0
 def addCoins(amount):
     global coins 
     coins += amount
+    saveData()
 
 def saveData():
     global coins
@@ -25,7 +26,6 @@ def saveData():
 
     json.dump(dataToSave, playerFile)
     playerFile.close()
-    
 
 def loadData():
     global coins
